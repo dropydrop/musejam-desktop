@@ -40,7 +40,7 @@ function patternToLabel(p,res){
 
 // ─── STATE ───────────────────────────────────────────────────────────────────
 let sessionCounter=1,bpm=75,isPlaying=false,metronomeOn=true,editMode=false,lastMesureIdx=-1;
-let audioCtx=null,nextBeatTime=0,currentCell=0,totalCells=0;
+let audioCtx=null,masterGain=null,nextBeatTime=0,currentCell=0,totalCells=0;
 let schedulerTimer=null,scheduledBeats=[],lastRenderedCell=-1,rafId=null;
 let currentData=null,history=[];
 let lockedSlots=Array(8).fill(null);
@@ -175,18 +175,18 @@ function updatePianoLit(notes){
 }
 
 // ─── AUDIO ───────────────────────────────────────────────────────────────────
-function getCtx(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();return audioCtx;}
+function getCtx(){if(!audioCtx){audioCtx=new(window.AudioContext||window.webkitAudioContext)();masterGain=audioCtx.createGain();masterGain.gain.value=0.715;masterGain.connect(audioCtx.destination);}return audioCtx;}
 function playClick(time,strong){
   const ctx=getCtx();
   const buf=ctx.createBuffer(1,ctx.sampleRate*0.04,ctx.sampleRate);
   const d=buf.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,8);
   const noise=ctx.createBufferSource();noise.buffer=buf;
-  const ng=ctx.createGain();ng.gain.setValueAtTime(strong?0.55:0.22,time);ng.gain.exponentialRampToValueAtTime(0.001,time+0.04);
-  noise.connect(ng);ng.connect(ctx.destination);noise.start(time);noise.stop(time+0.05);
+  const ng=ctx.createGain();ng.gain.setValueAtTime(strong?0.484:0.1936,time);ng.gain.exponentialRampToValueAtTime(0.001,time+0.04);
+  noise.connect(ng);ng.connect(masterGain);noise.start(time);noise.stop(time+0.05);
   const osc=ctx.createOscillator();const og=ctx.createGain();
   osc.type='sine';osc.frequency.setValueAtTime(strong?1000:700,time);osc.frequency.exponentialRampToValueAtTime(strong?600:400,time+0.03);
-  og.gain.setValueAtTime(strong?0.38:0.16,time);og.gain.exponentialRampToValueAtTime(0.001,time+0.03);
-  osc.connect(og);og.connect(ctx.destination);osc.start(time);osc.stop(time+0.04);
+  og.gain.setValueAtTime(strong?0.3344:0.1408,time);og.gain.exponentialRampToValueAtTime(0.001,time+0.03);
+  osc.connect(og);og.connect(masterGain);osc.start(time);osc.stop(time+0.04);
 }
 
 function noteToFreq(noteName){
@@ -200,7 +200,7 @@ function playChordNotes(chordName,velocity){
     const osc=ctx.createOscillator(),gn=ctx.createGain();
     osc.type='triangle';osc.frequency.setValueAtTime(freq,now);
     gn.gain.setValueAtTime(gain,now);gn.gain.exponentialRampToValueAtTime(0.001,now+duration);
-    osc.connect(gn);gn.connect(ctx.destination);osc.start(now);osc.stop(now+duration+0.01);
+    osc.connect(gn);gn.connect(masterGain);osc.start(now);osc.stop(now+duration+0.01);
   });
 }
 
