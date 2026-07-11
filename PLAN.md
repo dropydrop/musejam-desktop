@@ -51,7 +51,7 @@ Pour ne pas te dégoûter du projet par une frustration technique excessive, la 
 
 ---
 
-# MuseJam-Desktop : L'Analyse Froide des Risques
+# musejam-desktop : L'Analyse Froide des Risques
 
 ---
 
@@ -133,7 +133,7 @@ Rust + MIDI + Tauri + Audio temps réel + IA qui hallucine
 ### Jour 1 : L'Installation 🚀
 ```bash
 # Créer un nouveau projet Tauri avec template JS
-npm create tauri-app@latest MuseJam-Desktop
+npm create tauri-app@latest musejam-desktop
 # Choisir : Vanilla JS (pas React pour la simplicité)
 
 # Copier ton code MuseJam existant
@@ -234,7 +234,7 @@ Raisons :
 
 ```bash
 # Ne réfléchis plus. Tape ça :
-npm create tauri-app@latest MuseJam-Desktop -- --template vanilla-ts
+npm create tauri-app@latest musejam-desktop -- --template vanilla-ts
 
 # Dans 72h, tu auras ton .exe
 ```
@@ -247,12 +247,12 @@ npm create tauri-app@latest MuseJam-Desktop -- --template vanilla-ts
 
 ```bash
 # 1. Créer le projet Tauri v2 (version stable actuelle)
-npm create tauri-app@latest MuseJam-Desktop -- \
+npm create tauri-app@latest musejam-desktop -- \
     --template vanilla-ts \
     --manager npm
 
 # 2. Installer les dépendances
-cd MuseJam-Desktop
+cd musejam-desktop
 npm install
 
 # 3. Lancer en mode dev (hot-reload activé)
@@ -273,7 +273,7 @@ npm run tauri dev
 ## 📂 Structure Finale (Après Copier-Coller de MuseJam)
 
 ```
-MuseJam-Desktop/
+musejam-desktop/
 ├── src-tauri/              ← LAISSE TRANQUILLE (géré par Tauri)
 │   ├── src/
 │   │   └── main.rs         ← On touche PAS (sauf si besoin plus tard)
@@ -422,8 +422,8 @@ export class MIDIManager {
 
 ### Jour 1 (Installation) : 2h
 ```bash
-npm create tauri-app@latest MuseJam-Desktop -- --template vanilla-ts
-cd MuseJam-Desktop
+npm create tauri-app@latest musejam-desktop -- --template vanilla-ts
+cd musejam-desktop
 npm install
 npm run tauri dev  # Vérifier que la fenêtre s'ouvre
 ```
@@ -468,7 +468,7 @@ npm run tauri dev
 ## 🎯 Ce Que Tu Auras
 
 ```
-✅ MuseJam-Desktop.exe (ou .dmg/.deb)
+✅ musejam-desktop.exe (ou .dmg/.deb)
 ✅ Interface MuseJam identique
 ✅ Support MIDI plug-and-play
 ✅ Latence ~15-20ms (parfaitement jouable)
@@ -503,7 +503,7 @@ npm run tauri dev
 **Maintenant, GO !** 
 
 ```bash
-npm create tauri-app@latest MuseJam-Desktop -- --template vanilla-ts
+npm create tauri-app@latest musejam-desktop -- --template vanilla-ts
 ```
 
 Let's Jam ! 🤘🎹
