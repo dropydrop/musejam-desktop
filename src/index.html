@@ -29,6 +29,8 @@
   .btn-new{background:var(--accent)!important;color:#000!important;border-color:var(--accent)!important;}
   .btn-new:hover{background:#23d45e!important;}
   .btn-regen{border-color:var(--accent)!important;color:var(--accent)!important;}
+  .btn-fs{background:none;border:none;color:var(--muted);font-size:1rem;cursor:pointer;padding:2px 6px;line-height:1;transition:color 0.15s;}
+  .btn-fs:hover{color:var(--text);}
   /* Lock accords: locked=jaune rempli, unlocked=jaune outline */
   .btn-lockchord{border-color:var(--lock-chord)!important;color:var(--lock-chord)!important;}
   .btn-lockchord.all-locked{background:var(--lock-chord)!important;color:#000!important;}
@@ -272,6 +274,7 @@
 <body>
 
 <div class="topbar">
+  <button class="btn-fs" id="fsBtn">⛶</button>
   <span class="logo">MuseJam <span style="font-size:0.62rem;color:var(--muted);font-weight:400;letter-spacing:0.5px;">V18</span></span>
   <select id="tonality"><option value="Am">La min</option><option value="C">Do maj</option></select>
   <select id="difficulty"><option value="doux">Doux</option><option value="medium" selected>Medium</option><option value="spicy">Spicy</option></select>
@@ -280,6 +283,9 @@
   <button class="btn-regen" id="regenRhythmBtn">Nouveau Rythme</button>
   <button class="btn-lockchord" id="lockAllChordsBtn">🔓 Accords</button>
   <button class="btn-lockrythm" id="lockAllRythmsBtn">🎶 Rythmes</button>
+  <button class="btn-visual" id="visToggle">🎹 Musethesia</button>
+  <button class="play-btn" id="playBtnTop">▶</button>
+  <span class="musethesia-info" id="museThesiaInfo"></span>
 </div>
 
 <div class="edit-banner">✏️ Mode édition — clique les cases · <kbd style="background:rgba(255,255,255,0.1);border-radius:3px;padding:1px 4px;font-family:monospace;">E</kbd> ou ▶ pour quitter</div>
@@ -287,6 +293,10 @@
 <div class="main">
   <div class="panel panel-left" id="panelLeft"></div>
   <div class="panel panel-right" id="panelRight"></div>
+</div>
+
+<div class="musethesia-view" id="museThesiaView" style="display:none;">
+  <canvas id="fallCanvas"></canvas>
 </div>
 
 <div class="bottom-bar">
@@ -799,8 +809,20 @@ function openHistory(){
 }
 function closeHistory(){document.getElementById('histOverlay').classList.remove('open');}
 
+// ─── FULLSCREEN ──────────────────────────────────────────────────────────────
+function updateFsIcon(){
+  const btn=document.getElementById('fsBtn');
+  if(btn)btn.textContent=document.fullscreenElement?'✕':'⛶';
+}
+function toggleFullscreen(){
+  if(document.fullscreenElement){document.exitFullscreen();}
+  else{document.documentElement.requestFullscreen();}
+}
+document.addEventListener('fullscreenchange',updateFsIcon);
+
 // ─── INIT ────────────────────────────────────────────────────────────────────
 currentData=genererCarte();renderCard(currentData);
+document.getElementById('fsBtn').addEventListener('click',toggleFullscreen);
 document.getElementById('newCardBtn').addEventListener('click',()=>{resolutions=Array(8).fill(4);renderCard(genererCarte());});
 document.getElementById('regenRhythmBtn').addEventListener('click',()=>renderCard(genererCarte(true)));
 document.getElementById('lockAllChordsBtn').addEventListener('click',toggleLockAllChords);
@@ -819,7 +841,7 @@ window.addEventListener('keydown',e=>{
 </script>
 
   <!-- Indicateur MIDI (optionnel) -->
-  <div id="midi-status" style="position:fixed;bottom:10px;right:10px;font-size:12px;color:#888;">
+  <div id="midi-status" style="position:fixed;bottom:10px;left:10px;font-size:12px;color:#888;">
     ⚡ MIDI: <span id="midi-count">0</span> périphérique(s)
   </div>
 
