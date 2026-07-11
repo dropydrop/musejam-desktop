@@ -1,66 +1,178 @@
-🚀 Plan pour la Suite (Post-MVP)
-
-Phase 1 : Polish \& Stabilisation (1-2 jours)
-
-Tâche	Priorité
-
-Améliorer le rendu des notes défilantes (anti-flash)	Haute
-
-Ajouter un indicateur de progression (barre de lecture)	Moyenne
-
-Sauvegarder les préférences (BPM, vue, etc.)	Moyenne
-
-Gérer les erreurs MIDI (déconnexion, fallback)	Haute
-
-Raccourcis clavier complets	Basse
-
-Phase 2 : Features Utiles (3-5 jours)
-
-Tâche	Priorité
-
-Export MIDI du séquenceur (fichier .mid)	Haute
-
-Zoom/Dézoom UI (touches piano + notes)	Moyenne
-
-Thèmes (couleurs personnalisables)	Basse
-
-Enregistrement des sessions (audio ou MIDI)	Basse
-
-Mode démo (exemples de progressions)	Basse
-
-Phase 3 : Expérience Utilisateur (1 semaine)
-
-Tâche	Priorité
-
-Documentation (README, guide d'utilisation)	Haute
-
-Installer (NSIS pour Windows)	Moyenne
-
-Auto-update (Tauri updater)	Basse
-
-Téléchargement d'exemples de progressions	Basse
-
-Partage de sessions (export JSON)	Basse
-
-Phase 4 : Idées Futures
-
-Mode "Défi" avec score (comme Synthesia)
+🎯 Plan Post-MVP
 
 
 
-Visualisation des notes jouées (main droite)
+🔥 CRITIQUE : Visualisation des notes MIDI en orange dans MuseThesia
+
+Objectif : Quand tu joues sur ton clavier MIDI, les touches correspondantes s'illuminent en orange dans la vue MuseThesia (en plus du défilement vert du séquenceur).
 
 
 
-Intégration avec des VST
+À faire :
 
 
 
-Collaboration en réseau
+Écouter les événements midi-note-on dans la vue MuseThesia
 
 
 
-🎯 Prochaine Étape Recommandée
+Colorer la touche du piano en orange (#f7c948 ou #e8852a)
 
-Améliorer le rendu des notes défilantes (anti-flash) → l'effet visuel désagréable est le dernier bug avant une expérience fluide.
+
+
+Durée du flash : \~200ms
+
+
+
+Ne pas interférer avec les notes défilantes vertes
+
+
+
+🟡 Haute : Contraintes \& Défi enrichis
+
+Objectif : Remplacer les textes actuels (trop techniques) par des invites simples, inspirantes, actionnables.
+
+
+
+Exemples :
+
+
+
+"Joue une note par temps" → "Tiens-toi au rythme"
+
+
+
+"Syncope obligatoire" → "Joue une note en décalé sur le 2e temps"
+
+
+
+"Varie les nuances" → "Joue une phrase forte puis une phrase douce"
+
+
+
+À faire :
+
+
+
+Réécrire les listes CONTRAINTES et DEFIS dans main.ts
+
+
+
+Ajouter 5-6 invites par niveau (doux, medium, spicy)
+
+
+
+Les textes doivent parler à un musicien débutant/intermédiaire
+
+
+
+🟡 Haute : Export MIDI
+
+Objectif : Exporter la progression + patterns en fichier .mid (standard MIDI file).
+
+
+
+À faire :
+
+
+
+Bibliothèque : midi-file (npm) ou générer manuellement
+
+
+
+Exporter : notes jouées sur les temps marqués "1"
+
+
+
+Bouton dans la topbar : "💾 Export MIDI"
+
+
+
+Sauvegarde automatique dans \~/Downloads/musejam-session-xxx.mid
+
+
+
+🟡 Moyenne : Rendu des notes défilantes
+
+Objectif : Affiner le rendu visuel (moins de scintillement, plus de clarté).
+
+
+
+À faire :
+
+
+
+Envoie-moi des screenshots → je te dirai précisément ce qui cloche
+
+
+
+Peut-être un problème d'anti-aliasing, de vitesse, ou de couleurs
+
+
+
+🔵 Basse : Zoom/Dézoom UI
+
+Objectif : Agrandir/réduire la taille des touches de piano et des notes défilantes.
+
+
+
+À faire :
+
+
+
+Molette de souris ou boutons + / -
+
+
+
+Modifier l'échelle du canvas/défilement
+
+
+
+⚪ À éclaircir : Intégration VST
+
+Usages possibles :
+
+
+
+Jouer le séquenceur avec un vrai synthé (ex: Vital, Serum) plutôt qu'avec l'oscillateur basique de Web Audio
+
+
+
+Envoyer le MIDI vers un VST externe via loopMIDI
+
+
+
+Bref : Pas prioritaire, on oublie pour l'instant.
+
+
+
+📋 Ordre d'Attaque Recommandé
+
+🔥 Visualisation MIDI orange dans MuseThesia (3-4h)
+
+
+
+🟡 Contraintes \& Défi enrichis (1h)
+
+
+
+🟡 Export MIDI (2-3h)
+
+
+
+🟡 Rendu notes défilantes (à définir après screenshots)
+
+
+
+🔵 Zoom (optionnel)
+
+
+
+AUSSI :
+
+1.  \*\*Gestion d'État centralisée\*\* : Toute la logique d'état (séquenceur, piano, audio) est dans `main.ts`. À mesure que de nouvelles fonctionnalités arrivent, ce fichier risque de devenir très dense. Une réflexion vers un store simple ou une séparation plus granulaire serait bienvenue.
+
+
+
+2\.  \*\*Typage TypeScript\*\* : Le `@ts-nocheck` en haut de `main.ts` est un signal d'alerte : le typage n'est pas encore totalement maîtrisé sur les parties complexes. C'est une dette technique mineure mais qu'il faudra rembourser pour sécuriser les évolutions.
 

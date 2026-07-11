@@ -1,4 +1,5 @@
 # README.md - MuseJam-Desktop
+
 Version desktop de l'application MuseJam
 
 ## 🎯 Vision du Projet
@@ -225,10 +226,14 @@ npm run tauri dev -- -- --debug
 - ✅ Support MIDI
 - ✅ Interface piano
 - ✅ Contrôles de base
+- ✅ Visualiseur "Musethesia" (Alpha)
+- ✅ Topbar optimisée (UI responsive)
 
 ### Medium Term (V2)
 - 🔄 Enregistrement des sessions
 - 🔄 Export MIDI
+- 🔄 Typage TypeScript strict (suppression de @ts-nocheck)
+- 🔄 Refactorisation de la gestion d'état (store dédié)
 - 🔄 Thèmes personnalisables
 - 🔄 Mode "exercice" avec progression
 
