@@ -1,4 +1,7 @@
 // @ts-nocheck
+import './styles.css';
+import { midi } from './midi-manager.ts';
+
 // ─── CONSTANTS ───────────────────────────────────────────────────────────────
 const RES_OPTIONS  = [1, 2, 4];
 const RES_TO_CELLS = { 1:4, 2:8, 4:16 };
@@ -496,3 +499,27 @@ window.addEventListener('keydown',e=>{
   if(e.code==='KeyH'){e.preventDefault();openHistory();}
   if(e.code==='KeyE'){e.preventDefault();if(!isPlaying)toggleEditMode();}
 });
+
+// ─── MIDI ────────────────────────────────────────────────────────────────────
+(async function initMIDI() {
+    await midi.init();
+})();
+
+document.addEventListener('midi-note-on', ((e) => {
+    const { note, velocity } = e.detail;
+    console.log(`🎹 Note ON: ${note} (v:${velocity})`);
+}) as EventListener);
+
+document.addEventListener('midi-note-off', ((e) => {
+    const { note } = e.detail;
+    console.log(`🔇 Note OFF: ${note}`);
+}) as EventListener);
+
+document.addEventListener('midi-devices-changed', ((e) => {
+    const { count } = e.detail;
+    console.log(`📡 ${count} périphérique(s) MIDI`);
+    const el = document.getElementById('midi-count');
+    if (el) el.textContent = String(count);
+}) as EventListener);
+
+console.log('🎵 MuseJam-Desktop prêt !');

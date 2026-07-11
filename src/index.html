@@ -817,5 +817,12 @@ window.addEventListener('keydown',e=>{
   if(e.code==='KeyE'){e.preventDefault();if(!isPlaying)toggleEditMode();}
 });
 </script>
+
+  <!-- Indicateur MIDI (optionnel) -->
+  <div id="midi-status" style="position:fixed;bottom:10px;right:10px;font-size:12px;color:#888;">
+    ⚡ MIDI: <span id="midi-count">0</span> périphérique(s)
+  </div>
+
+  <script type="module" src="/src/main.ts"></script>
 </body>
 </html>
