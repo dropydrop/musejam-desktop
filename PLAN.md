@@ -1,4 +1,4 @@
-# musejam-desktop 🤘🎹 : Plan de Projet
+# musejam-desktop 🤘🎹
 
 ---
 
