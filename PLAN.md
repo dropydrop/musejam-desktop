@@ -1,4 +1,6 @@
-# MuseJam-Desktop 🤘🎹 : Plan initial par IA (Option finalement retenue : "Option B2 - Tauri v2 Light")
+# MuseJam-Desktop 🤘🎹 : 
+
+Plan initial par IA (Option finalement retenue : "Option B2 - Tauri v2 Light")
 
 ---
 
