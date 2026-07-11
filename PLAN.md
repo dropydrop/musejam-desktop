@@ -407,4 +407,91 @@ npm run tauri dev
 
 ---
 
+```markdown
+
+# musejam-desktop 🤘🎹
+
+---
+
+## 🎯 Vision Produit : MuseThesia
+
+**Objectif :** Mode "MuseThesia" = vue Synthesia-like avec défilement des notes du séquenceur, synchronisé BPM, loop infinie, plein écran.
+
+**Architecture MVP :**
+```
+Séquenceur MuseJam → Scheduler Audio → UI MuseThesia (piano + notes défilantes)
+```
+
+**Choix techniques :**
+- Génération MIDI : Stream en temps réel (Option B)
+- Moteur audio : Web MIDI API + AudioContext (Option A)
+- UI : Canvas ou DOM (à définir)
+
+---
+
+## 📋 Plan d'Action Réalisé
+
+### ✅ Étape 1 : Projet Tauri + Portage
+- [x] Création projet Tauri v2
+- [x] Portage de MuseJam (single-file HTML → src/)
+- [x] CSS/UI fonctionnelle
+
+### ✅ Étape 2 : MIDI
+- [x] Web MIDI API avec `midi-manager.ts`
+- [x] Détection périphériques (2 claviers détectés)
+- [x] Écouteurs `midi-note-on/off` sur document (fix du bug window→document)
+- [x] Indicateur MIDI en bas à droite
+
+### 🚧 Étape 3 : Lecture Audio du Séquenceur (en cours)
+- [ ] Jouer les notes des accords sur les temps marqués "1"
+- [ ] Synchronisation BPM
+- [ ] Web Audio API (oscillateurs)
+
+### ⏳ Étape 4 : UI MuseThesia
+- [ ] Piano 88 touches
+- [ ] Notes défilantes (style Synthesia)
+- [ ] Bascule entre vue séquenceur et vue Thesia
+- [ ] Plein écran, loop infinie
+
+---
+
+## 🛠️ Structure du Code
+
+```
+src/
+├── main.ts          # Code MuseJam + audio + MIDI (single file pour l'instant)
+├── midi-manager.ts  # Web MIDI API
+├── index.html       # UI complète
+└── styles.css       # CSS
+```
+
+---
+
+## 🔧 Problèmes Résolus
+
+1. **MIDI CustomEvents** : window.dispatchEvent → document.dispatchEvent (pour que main.ts les capte)
+2. **Portage single-file** : tout dans `main.ts` + `index.html`
+
+---
+
+## 📝 Prochaines Étapes
+
+1. Terminer lecture audio du séquenceur (en cours avec agent)
+2. Créer vue MuseThesia
+3. Synchroniser séquenceur ↔ Thesia ↔ BPM
+4. Boucle infinie + plein écran
+5. Build final `.exe`
+
+---
+
+## 🚀 Commandes
+
+```bash
+npm run tauri dev   # Dev avec hot-reload
+npm run tauri build # Build .exe
+```
+
+---
+
 *Let's Jam ! 🤘🎹*
+```

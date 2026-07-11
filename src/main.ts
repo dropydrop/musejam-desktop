@@ -51,6 +51,7 @@ let resolutions=Array(8).fill(4);
 const ALL_CHORDS=["Am","G","Em","F","C","Dm","Am7","Fmaj7","Gsus4","Em7","Dm7","G7"];
 const ACCORDS_FR={"Am":"LAm","G":"SOL","Em":"MIm","F":"FA","C":"DO","Dm":"RÉm","Am7":"LAm7","Fmaj7":"FAmaj7","Gsus4":"SOLsus4","Em7":"MIm7","Dm7":"RÉm7","G7":"SOL7"};
 const NOTES_ACC={"Am":["La","Do","Mi"],"G":["Sol","Si","Ré"],"Em":["Mi","Sol","Si"],"F":["Fa","La","Do"],"C":["Do","Mi","Sol"],"Dm":["Ré","Fa","La"],"Am7":["La","Do","Mi","Sol"],"Fmaj7":["Fa","La","Do","Mi"],"Gsus4":["Sol","Do","Ré"],"Em7":["Mi","Sol","Si","Ré"],"Dm7":["Ré","Fa","La","Do"],"G7":["Sol","Si","Ré","Fa"]};
+const NOTE_FREQ={"Do":261.63,"Do#":277.18,"Ré":293.66,"Ré#":311.13,"Mi":329.63,"Fa":349.23,"Fa#":369.99,"Sol":392.00,"Sol#":415.30,"La":440.00,"La#":466.16,"Si":493.88};
 const CONTRAINTES={
   doux:["Notes : La · Do · Mi · Sol — pentatonique seulement","Commence chaque mesure sur La ou Mi","Mouvement conjoint uniquement — pas de saut","Termine sur La ou Do à la fin de la boucle","Une note par temps — pas de croches pour l'instant"],
   medium:["Notes : Mi · Sol · La · Si · Do · Ré","Commence par la tonique de chaque accord","Maximum un saut par mesure (tierce ou quarte)","Évite de répéter deux fois de suite la même note","Termine chaque mesure sur une note de l'accord actif","Essaie une note de passage entre deux notes éloignées","Varie les nuances : au moins un changement de dynamique"],
@@ -183,6 +184,21 @@ function playClick(time,strong){
   osc.connect(og);og.connect(ctx.destination);osc.start(time);osc.stop(time+0.04);
 }
 
+function noteToFreq(noteName){
+  return NOTE_FREQ[noteName]||0;
+}
+function playChordNotes(chordName,velocity){
+  const ctx=getCtx(),notes=NOTES_ACC[chordName];
+  if(!notes)return;const now=ctx.currentTime,duration=0.15,gain=0.3;
+  notes.forEach(n=>{
+    const freq=noteToFreq(n);if(!freq)return;
+    const osc=ctx.createOscillator(),gn=ctx.createGain();
+    osc.type='triangle';osc.frequency.setValueAtTime(freq,now);
+    gn.gain.setValueAtTime(gain,now);gn.gain.exponentialRampToValueAtTime(0.001,now+duration);
+    osc.connect(gn);gn.connect(ctx.destination);osc.start(now);osc.stop(now+duration+0.01);
+  });
+}
+
 let cellMap=[];
 function buildCellMap(){
   if(!currentData)return[];
@@ -257,7 +273,10 @@ function updateVisual(cellIdx){
   const c=document.getElementById('beatCounter');
   if(c){c.innerHTML=Array.from({length:res},(_,i)=>`<span style="color:${i===qNum?(i===0?'var(--accent2)':'var(--text)'):'var(--muted)'}">${i+1}</span>`).join(' · ');}
 
-  if(isActiveBeat) flashPiano(chordNotes);
+  if(isActiveBeat){
+    flashPiano(chordNotes);
+    playChordNotes(currentData.progression[mi],0.8);
+  }
 }
 
 // ─── EDIT MODE ───────────────────────────────────────────────────────────────
