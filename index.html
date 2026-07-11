@@ -1,43 +1,49 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="stylesheet" href="/src/styles.css" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Tauri App</title>
-    <script type="module" src="/src/main.ts" defer></script>
-  </head>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>MuseJam V18</title>
+  <link rel="stylesheet" href="/src/styles.css" />
+  <script type="module" src="/src/main.ts" defer></script>
+</head>
+<body>
 
-  <body>
-    <main class="container">
-      <h1>Welcome to Tauri</h1>
+<div class="topbar">
+  <span class="logo">MuseJam <span style="font-size:0.62rem;color:var(--muted);font-weight:400;letter-spacing:0.5px;">V18</span></span>
+  <select id="tonality"><option value="Am">La min</option><option value="C">Do maj</option></select>
+  <select id="difficulty"><option value="doux">Doux</option><option value="medium" selected>Medium</option><option value="spicy">Spicy</option></select>
+  <select id="mesures"><option value="2">2 mesures</option><option value="4" selected>4 mesures</option><option value="8">8 mesures</option></select>
+  <button class="btn-new" id="newCardBtn">Nouvelle session</button>
+  <button class="btn-regen" id="regenRhythmBtn">Nouveau Rythme</button>
+  <button class="btn-lockchord" id="lockAllChordsBtn">🔓 Accords</button>
+  <button class="btn-lockrythm" id="lockAllRythmsBtn">🎶 Rythmes</button>
+</div>
 
-      <div class="row">
-        <a href="https://vite.dev" target="_blank">
-          <img src="/src/assets/vite.svg" class="logo vite" alt="Vite logo" />
-        </a>
-        <a href="https://tauri.app" target="_blank">
-          <img
-            src="/src/assets/tauri.svg"
-            class="logo tauri"
-            alt="Tauri logo"
-          />
-        </a>
-        <a href="https://www.typescriptlang.org/docs" target="_blank">
-          <img
-            src="/src/assets/typescript.svg"
-            class="logo typescript"
-            alt="typescript logo"
-          />
-        </a>
-      </div>
-      <p>Click on the Tauri logo to learn more about the framework</p>
+<div class="edit-banner">✏️ Mode édition — clique les cases · <kbd style="background:rgba(255,255,255,0.1);border-radius:3px;padding:1px 4px;font-family:monospace;">E</kbd> ou ▶ pour quitter</div>
 
-      <form class="row" id="greet-form">
-        <input id="greet-input" placeholder="Enter a name..." />
-        <button type="submit">Greet</button>
-      </form>
-      <p id="greet-msg"></p>
-    </main>
-  </body>
+<div class="main">
+  <div class="panel panel-left" id="panelLeft"></div>
+  <div class="panel panel-right" id="panelRight"></div>
+</div>
+
+<div class="bottom-bar">
+  <span class="session-info" id="sessionInfo">Session 1 · 4 mesures · medium</span>
+  <button class="hist-btn-bottom" id="histBtn">⏱ Historique</button>
+</div>
+
+<div class="hist-overlay" id="histOverlay">
+  <div class="hist-drawer">
+    <div class="hist-header">
+      <h2>Historique</h2>
+      <button class="hist-close" id="histClose">×</button>
+    </div>
+    <div class="hist-grid" id="histGrid"></div>
+  </div>
+</div>
+
+</body>
 </html>

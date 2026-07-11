@@ -13,9 +13,9 @@
     "withGlobalTauri": true,
     "windows": [
       {
-        "title": "musejam-desktop",
-        "width": 800,
-        "height": 600
+        "title": "MuseJam",
+        "width": 1280,
+        "height": 720
       }
     ],
     "security": {

@@ -1,4 +1,310 @@
-// @ts-nocheck
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>MuseJam V18</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap');
+  :root {
+    --bg:#0a0b0f; --surface:#111218; --surface2:#181a24;
+    --border:rgba(255,255,255,0.07);
+    --accent:#1db954; --accent-dim:#158a3e;
+    --accent2:#e8402a;
+    --text:#e8ecff; --muted:#5a607a;
+    --beat-on:#1db954; --beat-off:#1c1f2e; --beat-active:#e8402a;
+    --lock-chord:#f7c948; --lock-rythm:#1db954;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;height:100dvh;overflow:hidden;display:flex;flex-direction:column;}
+
+  /* TOPBAR */
+  .topbar{display:flex;align-items:center;gap:7px;padding:7px 14px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap;}
+  .logo{font-size:1rem;font-weight:800;color:var(--accent);letter-spacing:-0.5px;margin-right:4px;}
+  .topbar select,.topbar button{font-family:'Syne',sans-serif;font-size:0.74rem;font-weight:700;background:var(--surface2);color:var(--text);border:1px solid var(--border);padding:4px 10px;border-radius:999px;cursor:pointer;transition:background 0.15s;text-transform:uppercase;letter-spacing:0.5px;}
+  .topbar select:hover,.topbar button:hover{background:#1e2130;}
+  .btn-new{background:var(--accent)!important;color:#000!important;border-color:var(--accent)!important;}
+  .btn-new:hover{background:#23d45e!important;}
+  .btn-regen{border-color:var(--accent)!important;color:var(--accent)!important;}
+  /* Lock accords: locked=jaune rempli, unlocked=jaune outline */
+  .btn-lockchord{border-color:var(--lock-chord)!important;color:var(--lock-chord)!important;}
+  .btn-lockchord.all-locked{background:var(--lock-chord)!important;color:#000!important;}
+  /* Lock rythmes: locked=vert rempli, unlocked=outline */
+  .btn-lockrythm{border-color:var(--muted)!important;color:var(--muted)!important;}
+  .btn-lockrythm.all-locked{border-color:var(--lock-rythm)!important;color:var(--lock-rythm)!important;}
+
+  /* LAYOUT */
+  .main{display:grid;grid-template-columns:1fr 1fr;flex:1;overflow:hidden;min-height:0;max-width:1380px;margin:0 auto;width:100%;}
+  .panel{padding:10px 15px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;min-height:0;}
+  .panel-left{border-right:1px solid var(--border);}
+
+  @media (max-width: 900px) {
+    /* Allow natural scrolling instead of locked full-screen */
+    html, body {
+      height: auto;
+      min-height: 100dvh;
+      overflow: visible;
+    }
+    .main {
+      grid-template-columns: 1fr;
+      overflow: visible;
+      max-width: 100%;
+    }
+    .panel-left { border-right: none; border-bottom: 1px solid var(--border); }
+    .panel {
+      overflow-y: visible;
+      min-height: auto;
+    }
+    .topbar { position: relative; } /* no sticky anchoring on mobile */
+
+    /* Accord header: wrap into a clean multi-line layout instead of squeezing */
+    .accord-header {
+      flex-wrap: wrap;
+      row-gap: 6px;
+    }
+    .accord-notes {
+      order: 3;
+      flex: 1 1 100%;
+      white-space: normal;
+      overflow: visible;
+      text-overflow: unset;
+    }
+    .res-inline {
+      order: 4;
+      flex: 1 1 100%;
+      justify-content: flex-start;
+    }
+    .accord-icons {
+      order: 2;
+      margin-left: auto;
+    }
+
+    /* Sequencer: guarantee real height per cell, never collapsed by flex parent */
+    .seq-wrapper { overflow: visible; }
+    .sequencer { flex-wrap: nowrap; width: 100%; }
+    .beat-group { min-width: 0; }
+    .beat {
+      height: 34px;
+      min-height: 34px;
+      min-width: 14px;
+      flex: 1 1 0;
+    }
+    .beat-nums { width: 100%; }
+
+    .piano-section .keyboard-wrap { height: 100px; }
+  }
+  .panel-title{font-size:0.6rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:8px;}
+  .panel-title::after{content:'';flex:1;height:1px;background:var(--border);}
+
+  /* TRANSPORT */
+  .transport{display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
+  .bpm-control{display:flex;align-items:center;gap:4px;background:var(--surface2);border-radius:999px;padding:4px 10px;border:1px solid var(--border);}
+  .bpm-label{font-size:0.62rem;color:var(--muted);font-weight:700;letter-spacing:1px;text-transform:uppercase;}
+  .bpm-val{font-family:'JetBrains Mono',monospace;font-size:0.95rem;font-weight:700;color:var(--accent);min-width:32px;text-align:center;}
+  .bpm-btn{background:none;border:none;color:var(--muted);font-size:0.95rem;cursor:pointer;padding:0 2px;line-height:1;}
+  .bpm-btn:hover{color:var(--text);}
+  .play-btn{font-family:'Syne',sans-serif;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:4px 14px;border-radius:999px;cursor:pointer;font-size:0.74rem;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;transition:all 0.15s;}
+  .play-btn:hover{background:#1e2130;}
+  .play-btn.playing{background:var(--accent);color:#000;border-color:var(--accent);}
+  .play-btn.blocked{opacity:0.38;cursor:not-allowed;}
+  .metro-btn{font-family:'Syne',sans-serif;background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:4px 10px;border-radius:999px;cursor:pointer;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;transition:all 0.15s;}
+  .metro-btn.on{color:var(--text);border-color:rgba(255,255,255,0.2);}
+  .edit-btn-global{font-family:'Syne',sans-serif;background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:4px 10px;border-radius:999px;cursor:pointer;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;transition:all 0.15s;}
+  .edit-btn-global.on{border-color:var(--accent);color:var(--accent);background:rgba(29,185,84,0.08);}
+  /* Total indicator inline next to edit btn */
+  .total-badge{font-family:'JetBrains Mono',monospace;font-size:0.68rem;font-weight:700;padding:3px 9px;border-radius:999px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);transition:color 0.2s,border-color 0.2s;white-space:nowrap;}
+  .total-badge.ok{color:var(--accent);border-color:var(--accent);}
+  .total-badge.warn{color:var(--accent2);border-color:var(--accent2);}
+
+  /* BEAT COUNTER */
+  .beat-counter{font-family:'JetBrains Mono',monospace;font-size:1.5rem;font-weight:700;color:var(--muted);text-align:center;letter-spacing:5px;padding:0;}
+
+  /* EDIT BANNER */
+  .edit-banner{display:none;background:rgba(29,185,84,0.08);border-bottom:1px solid rgba(29,185,84,0.2);padding:3px 14px;font-size:0.65rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--accent);text-align:center;flex-shrink:0;}
+  body.edit-mode .edit-banner{display:block;}
+
+  /* ACCORD BLOCKS */
+  .accord-block{background:var(--surface2);border-radius:11px;border:1px solid var(--border);overflow:hidden;transition:border-color 0.1s,box-shadow 0.1s;}
+  .accord-block.active-mesure{border-color:var(--accent2);}
+  .accord-block.chord-locked{border-color:var(--lock-chord);}
+  .accord-block.active-mesure.chord-locked{border-color:var(--accent2);box-shadow:0 0 0 1px var(--lock-chord);}
+  .accord-block.rythm-locked .seq-wrapper{background:rgba(29,185,84,0.03);border-top:1px solid rgba(29,185,84,0.12);}
+
+  /* ACCORD HEADER — single compact line */
+  .accord-header{
+    display:flex;align-items:center;gap:6px;
+    padding:6px 10px 4px;
+    flex-wrap:nowrap;
+    min-width:0;
+  }
+  .mesure-num{
+    font-size:0.58rem;color:var(--muted);font-weight:700;letter-spacing:1px;
+    text-transform:uppercase;flex-shrink:0;
+  }
+  .accord-name{
+    font-size:1rem;font-weight:600;color:var(--text);line-height:1;
+    flex-shrink:0;min-width:44px;
+  }
+  .accord-notes{
+    font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--muted);
+    letter-spacing:0.5px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+  /* Resolution inline buttons */
+  .res-inline{display:flex;gap:3px;flex-shrink:0;align-items:center;}
+  .res-lbl{font-size:0.55rem;color:var(--muted);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-right:2px;}
+  .res-btn{
+    font-family:'JetBrains Mono',monospace;font-size:0.62rem;font-weight:700;
+    background:var(--beat-off);border:1px solid var(--border);color:var(--muted);
+    padding:2px 6px;border-radius:5px;cursor:pointer;transition:all 0.1s;
+  }
+  .res-btn:hover{color:var(--text);border-color:rgba(255,255,255,0.2);}
+  .res-btn.active{background:rgba(29,185,84,0.15);border-color:var(--accent);color:var(--accent);}
+  .res-btn.warn{background:rgba(232,64,42,0.08);border-color:rgba(232,64,42,0.35);color:rgba(232,64,42,0.65);}
+  /* Icon buttons in header */
+  .accord-icons{display:flex;gap:3px;align-items:center;flex-shrink:0;}
+  .icon-btn{
+    background:none;border:1px solid var(--border);border-radius:6px;
+    width:22px;height:22px;display:flex;align-items:center;justify-content:center;
+    cursor:pointer;font-size:0.72rem;transition:all 0.12s;color:var(--muted);flex-shrink:0;
+  }
+  .icon-btn:hover{background:rgba(255,255,255,0.05);color:var(--text);}
+  .icon-btn.chord-lock-btn.locked{background:rgba(247,201,72,0.12);border-color:var(--lock-chord);color:var(--lock-chord);}
+  .icon-btn.rythm-lock-btn.locked{background:rgba(29,185,84,0.12);border-color:var(--lock-rythm);color:var(--lock-rythm);}
+
+  /* CHORD PICKER */
+  .accord-picker{display:none;flex-wrap:wrap;gap:4px;padding:6px 10px 8px;}
+  .accord-picker.open{display:flex;}
+  .pick-btn{font-family:'Syne',sans-serif;font-size:0.7rem;font-weight:700;background:var(--beat-off);border:1px solid var(--border);color:var(--text);padding:4px 8px;border-radius:7px;cursor:pointer;transition:all 0.1s;text-transform:uppercase;}
+  .pick-btn:hover{background:var(--accent);border-color:var(--accent);color:#000;}
+  .pick-btn.selected{background:var(--accent);border-color:var(--accent);color:#000;}
+  .pick-cancel{color:var(--muted)!important;}
+
+  /* SEQUENCER */
+  .seq-wrapper{padding:4px 10px 8px;transition:background 0.2s;}
+  .beat-nums{display:flex;margin-bottom:2px;}
+  .beat-num-cell{flex:1;text-align:center;font-family:'JetBrains Mono',monospace;font-size:0.5rem;color:var(--muted);font-weight:700;}
+  .beat-num-cell.strong{color:var(--accent);}
+  .sequencer{display:flex;gap:2px;}
+  .beat-group{display:flex;gap:2px;flex:1;}
+  .beat-group+.beat-group{margin-left:4px;}
+  .beat{
+    flex:1;height:26px;border-radius:4px;
+    background:var(--beat-off);border:1px solid rgba(255,255,255,0.04);
+    transition:background 0.04s,transform 0.05s;cursor:default;
+  }
+  .beat.on{background:var(--beat-on);}
+  .beat.rest{background:#111320;border:1px dashed rgba(255,255,255,0.07);}
+  .beat.active-cursor{background:var(--beat-active)!important;box-shadow:0 0 6px rgba(232,64,42,0.45);}
+  .beat.rest.active-cursor{background:rgba(232,64,42,0.16)!important;box-shadow:none;}
+  body.edit-mode .beat{cursor:pointer;}
+  body.edit-mode .beat:hover{transform:scaleY(1.1);filter:brightness(1.4);}
+  body.edit-mode .beat.on:hover{background:#28e86a;}
+  body.edit-mode .beat.rest:hover{background:rgba(29,185,84,0.25);border-color:rgba(29,185,84,0.45);}
+  .rhythm-label{font-family:'JetBrains Mono',monospace;font-size:0.62rem;color:var(--muted);letter-spacing:2px;margin-top:3px;}
+
+  /* PIANO */
+  .piano-section{background:var(--surface2);border-radius:13px;border:1px solid var(--border);padding:16px 20px 20px;}
+  .piano-section h3{font-size:0.65rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:14px;}
+  .keyboard-wrap{position:relative;height:120px;user-select:none;width:100%;}
+  .white-keys{display:flex;height:100%;gap:3px;}
+  .wkey{flex:1;background:#e8ecff;border-radius:0 0 7px 7px;border:1px solid #b0b8d8;transition:background 0.12s;display:flex;align-items:flex-end;justify-content:center;padding-bottom:8px;box-shadow:0 2px 3px rgba(0,0,0,0.15);}
+  /* lit-grey = note de l'accord actif (gris discret par défaut) */
+  .wkey.lit-grey{background:#9aa0b8;border-color:#7a8099;}
+  /* lit-flash = frappe active (vert vif pendant 2 tuiles) */
+  .wkey.lit-flash{background:var(--accent);border-color:var(--accent-dim);}
+  .wkey-label{font-size:0.7rem;font-weight:700;color:rgba(0,0,0,0.32);font-family:'JetBrains Mono',monospace;}
+  .wkey.lit-grey .wkey-label{color:rgba(0,0,0,0.5);}
+  .wkey.lit-flash .wkey-label{color:rgba(0,0,0,0.65);}
+  .black-keys{position:absolute;top:0;left:0;right:0;height:60%;pointer-events:none;}
+  .bkey{position:absolute;background:#1a1c2a;border-radius:0 0 5px 5px;border:1px solid #0a0b10;height:100%;box-shadow:0 2px 4px rgba(0,0,0,0.35);}
+
+  /* RIGHT PANEL */
+  .constraint-section{background:var(--surface2);border-radius:11px;border:1px solid var(--border);padding:10px 14px;}
+  .constraint-section h3{font-size:0.6rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+  .constraint-item{display:flex;gap:8px;align-items:flex-start;padding:5px 0;border-bottom:1px solid var(--border);font-size:0.85rem;line-height:1.35;}
+  .constraint-item:last-child{border-bottom:none;padding-bottom:0;}
+  .constraint-dot{width:5px;height:5px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:5px;}
+  .defi-section{background:var(--surface2);border-radius:11px;border:1px solid var(--accent2);padding:10px 14px;}
+  .defi-section h3{font-size:0.6rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--accent2);margin-bottom:6px;}
+  .defi-text{font-size:0.92rem;font-weight:700;line-height:1.4;color:var(--text);}
+
+  /* NOTE PILLS (right panel only, compact) */
+  .notes-row{display:flex;gap:4px;flex-wrap:wrap;}
+  .note-pill{background:var(--beat-off);border:1px solid var(--border);border-radius:6px;padding:2px 8px;font-family:'JetBrains Mono',monospace;font-size:0.78rem;font-weight:700;color:var(--text);}
+  .note-pill.pentat{border-color:var(--accent);color:var(--accent);}
+  .note-pill.extra{opacity:0.38;}
+
+  /* BOTTOM BAR — session info + history button */
+  .bottom-bar{
+    display:flex;align-items:center;justify-content:flex-end;gap:8px;
+    padding:5px 15px;background:var(--surface);
+    border-top:1px solid var(--border);flex-shrink:0;
+  }
+  .session-info{font-family:'JetBrains Mono',monospace;font-size:0.68rem;color:var(--muted);letter-spacing:0.5px;}
+  .hist-btn-bottom{font-family:'Syne',sans-serif;font-size:0.68rem;font-weight:700;background:var(--surface2);border:1px solid var(--accent2);color:var(--accent2);padding:3px 10px;border-radius:999px;cursor:pointer;text-transform:uppercase;letter-spacing:0.5px;transition:background 0.15s;}
+  .hist-btn-bottom:hover{background:#1e2130;}
+
+  /* HISTORY */
+  .hist-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:100;display:none;align-items:flex-end;}
+  .hist-overlay.open{display:flex;}
+  .hist-drawer{background:var(--surface);border-top:1px solid var(--border);width:100%;padding:18px 22px 24px;border-radius:18px 18px 0 0;max-height:55vh;overflow-y:auto;}
+  .hist-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+  .hist-header h2{font-size:0.85rem;font-weight:800;color:var(--text);letter-spacing:1px;text-transform:uppercase;}
+  .hist-close{background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;padding:0;}
+  .hist-close:hover{color:var(--text);}
+  .hist-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px;}
+  .hist-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;cursor:pointer;transition:border-color 0.15s;}
+  .hist-card:hover{border-color:var(--accent);}
+  .hist-num{font-size:0.6rem;color:var(--muted);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px;}
+  .hist-accords{font-size:0.9rem;font-weight:800;color:var(--text);}
+  .hist-meta{font-size:0.68rem;color:var(--muted);margin-top:3px;}
+  .hist-reuse{font-size:0.65rem;color:var(--accent);font-weight:700;margin-top:5px;text-transform:uppercase;letter-spacing:0.5px;}
+
+  .shortcut-hint{text-align:center;font-size:0.64rem;color:var(--muted);padding:1px 0;letter-spacing:0.5px;}
+  ::-webkit-scrollbar{width:3px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="logo">MuseJam <span style="font-size:0.62rem;color:var(--muted);font-weight:400;letter-spacing:0.5px;">V18</span></span>
+  <select id="tonality"><option value="Am">La min</option><option value="C">Do maj</option></select>
+  <select id="difficulty"><option value="doux">Doux</option><option value="medium" selected>Medium</option><option value="spicy">Spicy</option></select>
+  <select id="mesures"><option value="2">2 mesures</option><option value="4" selected>4 mesures</option><option value="8">8 mesures</option></select>
+  <button class="btn-new" id="newCardBtn">Nouvelle session</button>
+  <button class="btn-regen" id="regenRhythmBtn">Nouveau Rythme</button>
+  <button class="btn-lockchord" id="lockAllChordsBtn">🔓 Accords</button>
+  <button class="btn-lockrythm" id="lockAllRythmsBtn">🎶 Rythmes</button>
+</div>
+
+<div class="edit-banner">✏️ Mode édition — clique les cases · <kbd style="background:rgba(255,255,255,0.1);border-radius:3px;padding:1px 4px;font-family:monospace;">E</kbd> ou ▶ pour quitter</div>
+
+<div class="main">
+  <div class="panel panel-left" id="panelLeft"></div>
+  <div class="panel panel-right" id="panelRight"></div>
+</div>
+
+<div class="bottom-bar">
+  <span class="session-info" id="sessionInfo">Session 1 · 4 mesures · medium</span>
+  <button class="hist-btn-bottom" id="histBtn">⏱ Historique</button>
+</div>
+
+<div class="hist-overlay" id="histOverlay">
+  <div class="hist-drawer">
+    <div class="hist-header">
+      <h2>Historique</h2>
+      <button class="hist-close" id="histClose">×</button>
+    </div>
+    <div class="hist-grid" id="histGrid"></div>
+  </div>
+</div>
+
+<script>
 // ─── CONSTANTS ───────────────────────────────────────────────────────────────
 const RES_OPTIONS  = [1, 2, 4];
 const RES_TO_CELLS = { 1:4, 2:8, 4:16 };
@@ -104,6 +410,7 @@ function setResolution(slotIdx,newRes){
 
 function refreshBlockDOM(i){
   const data=currentData,acc=data.progression[i],pattern=data.patterns[i],res=resolutions[i];
+  // res buttons
   const resBtnsHTML=RES_OPTIONS.map(r=>{
     const testTotal=Array.from({length:data.nbMesures},(_,j)=>j===i?r:resolutions[j]).reduce((a,b)=>a+b,0);
     const wouldWarn=testTotal%2!==0;
@@ -111,6 +418,7 @@ function refreshBlockDOM(i){
   }).join('');
   const ri=document.querySelector(`#block-${i} .res-inline`);
   if(ri)ri.innerHTML=`<span class="res-lbl">Dur.</span>${resBtnsHTML}`;
+  // sequencer grid
   let numRow='',groupsHTML='';
   for(let g=0;g<res;g++){
     numRow+=`<div style="flex:1;display:flex;">`+[0,1,2,3].map(s=>`<div class="beat-num-cell ${s===0?'strong':''}" style="${s===2?'opacity:0.5':''}">${s===0?(g+1):(s===2?'+':'')}</div>`).join('')+`</div>`;
@@ -132,6 +440,7 @@ function renderPiano(lit){
   return`<div class="keyboard-wrap"><div class="white-keys">${WHITE_NOTES.map(n=>`<div class="wkey ${lit.includes(n)?'lit-grey':''}"><span class="wkey-label">${n}</span></div>`).join('')}</div><div class="black-keys">${BLACK_SLOTS.map(s=>`<div class="bkey" style="left:${(s+1)*wPct-wPct*0.3}%;width:${wPct*0.6}%;"></div>`).join('')}</div></div>`;
 }
 
+// Set grey highlight for current chord notes (no flash)
 function updatePianoChord(notes){
   document.querySelectorAll('.wkey').forEach((el,i)=>{
     el.classList.remove('lit-flash');
@@ -139,15 +448,19 @@ function updatePianoChord(notes){
   });
 }
 
+// Piano flash: light up chord notes in green for duration of 2 cells, then back to grey
 let pianoFlashTimeout=null;
 function flashPiano(notes){
+  // Cancel any pending fade-out
   if(pianoFlashTimeout){clearTimeout(pianoFlashTimeout);pianoFlashTimeout=null;}
+  // Flash green
   document.querySelectorAll('.wkey').forEach((el,i)=>{
     const isChordNote=notes.includes(WHITE_NOTES[i]);
     el.classList.toggle('lit-flash', isChordNote);
-    el.classList.toggle('lit-grey',  false);
+    el.classList.toggle('lit-grey',  false); // remove grey while flashing
   });
-  const twoCell=(60/bpm/4)*2*1000;
+  // After 2 cells worth of time, revert to grey
+  const twoCell=(60/bpm/4)*2*1000; // ms
   pianoFlashTimeout=setTimeout(()=>{
     document.querySelectorAll('.wkey').forEach((el,i)=>{
       el.classList.remove('lit-flash');
@@ -157,6 +470,7 @@ function flashPiano(notes){
   }, twoCell);
 }
 
+// Legacy alias for clear calls
 function updatePianoLit(notes){
   if(pianoFlashTimeout){clearTimeout(pianoFlashTimeout);pianoFlashTimeout=null;}
   document.querySelectorAll('.wkey').forEach((el,i)=>{
@@ -235,6 +549,7 @@ function updateVisual(cellIdx){
   const entry=cellMap[cellIdx],mi=entry.mesureIdx,lc=entry.localCell,qNum=entry.beatNumInMesure,res=resolutions[mi];
   const chordNotes=NOTES_ACC[currentData.progression[mi]]||[];
 
+  // Mesure changed: update grey base
   if(mi!==lastMesureIdx){
     updatePianoChord(chordNotes);
     lastMesureIdx=mi;
@@ -283,6 +598,7 @@ function refreshLockAllChordsBtn(){
   const n=currentData?currentData.nbMesures:4;
   const all=Array.from({length:n},(_,i)=>lockedSlots[i]!==null).every(Boolean);
   const btn=document.getElementById('lockAllChordsBtn');
+  // locked=🔒 unlocked=🔓 (coherent with per-slot)
   if(btn){btn.classList.toggle('all-locked',all);btn.textContent=all?'🔒 Accords':'🔓 Accords';}
 }
 function toggleLockAllChords(){
@@ -335,11 +651,13 @@ function renderCard(data){
   history.unshift({num,tonality:data.tonality,diff:data.diff,progression:[...data.progression],nbMesures:data.nbMesures,resolutions:[...resolutions]});
   if(history.length>12)history.pop();
 
+  // Update session info in bottom bar
   const si=document.getElementById('sessionInfo');
   if(si)si.textContent=`Session ${num} · ${data.nbMesures} mesures · ${data.diff}`;
 
   const diffCol={doux:'#1db954',medium:'#f7c948',spicy:'#e8402a'}[data.diff];
 
+  // ── LEFT PANEL ──
   let leftHTML=`
     <div class="panel-title">Main gauche — accords & rythme</div>
     <div class="transport">
@@ -405,6 +723,7 @@ function renderCard(data){
 
   leftHTML+=`<div class="shortcut-hint">Espace/R → session · T → rythme · P → play · E → éditer · H → historique</div>`;
 
+  // ── RIGHT PANEL ──
   const notesGamme=data.tonality==='Am'?['La','Si','Do','Ré','Mi','Fa','Sol']:['Do','Ré','Mi','Fa','Sol','La','Si'];
   const pentat=data.tonality==='Am'?['La','Do','Ré','Mi','Sol']:['Do','Ré','Mi','Sol','La'];
   const firstNotes=NOTES_ACC[data.progression[0]]||[];
@@ -424,6 +743,7 @@ function renderCard(data){
   refreshLockAllChordsBtn();refreshLockAllRythmsBtn();
   updateTotalBadge();
 
+  // Events
   document.getElementById('bpmDown').addEventListener('click',()=>{bpm=Math.max(40,bpm-5);document.getElementById('bpmDisplay').textContent=bpm;if(isPlaying){stopScheduler();startScheduler();}});
   document.getElementById('bpmUp').addEventListener('click',()=>{bpm=Math.min(200,bpm+5);document.getElementById('bpmDisplay').textContent=bpm;if(isPlaying){stopScheduler();startScheduler();}});
   document.getElementById('playBtn').addEventListener('click',togglePlay);
@@ -496,3 +816,6 @@ window.addEventListener('keydown',e=>{
   if(e.code==='KeyH'){e.preventDefault();openHistory();}
   if(e.code==='KeyE'){e.preventDefault();if(!isPlaying)toggleEditMode();}
 });
+</script>
+</body>
+</html>
