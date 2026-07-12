@@ -297,6 +297,7 @@
 <div class="musethesia-view" id="museThesiaView" style="display:none;">
   <div class="musethesia-overlay-info" id="museThesiaOverlayInfo"></div>
   <canvas id="fallCanvas"></canvas>
+  <div id="impactLine"></div>
   <div class="musethesia-piano" id="museThesiaPiano"></div>
 </div>
 
@@ -838,6 +839,8 @@ window.addEventListener('keydown',e=>{
   if(e.code==='KeyP'){e.preventDefault();togglePlay();}
   if(e.code==='KeyH'){e.preventDefault();openHistory();}
   if(e.code==='KeyE'){e.preventDefault();if(!isPlaying)toggleEditMode();}
+  if(e.code==='KeyM'){e.preventDefault();metronomeOn=!metronomeOn;const mb=document.getElementById('metroBtn');if(mb)mb.classList.toggle('on',metronomeOn);}
+  if(e.code==='F11'){e.preventDefault();document.documentElement.requestFullscreen();}
 });
 </script>
 
