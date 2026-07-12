@@ -251,7 +251,21 @@ body.edit-mode .beat.rest:hover{background:rgba(29,185,84,0.25);border-color:rgb
 /* MUSETHESIA VIEW */
 .btn-visual{background:rgba(232,236,255,0.07)!important;color:var(--text)!important;border-color:rgba(232,236,255,0.15)!important;}
 .btn-visual:hover{background:rgba(232,236,255,0.14)!important;}
-.musethesia-info{font-family:'JetBrains Mono',monospace;font-size:0.62rem;color:var(--muted);margin-left:auto;letter-spacing:0.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:360px;}
-.musethesia-view{flex:1;display:none;flex-direction:column;overflow:hidden;background:var(--bg);}
+.musethesia-view{flex:1;display:none;flex-direction:column;overflow:hidden;background:var(--bg);position:relative;}
 .musethesia-view canvas{flex:1;width:100%;display:block;}
+.musethesia-overlay-info{position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:10;background:rgba(10,11,15,0.7);backdrop-filter:blur(4px);padding:6px 18px;border-radius:999px;border:1px solid rgba(255,255,255,0.06);font-family:'JetBrains Mono',monospace;font-size:0.85rem;font-weight:700;color:var(--text);text-align:center;white-space:nowrap;pointer-events:none;letter-spacing:0.3px;}
+.musethesia-chord-highlight{color:var(--accent);}
+
+/* MUSETHESIA PIANO */
+.musethesia-piano{flex-shrink:0;height:140px;width:100%;background:#0d0e15;border-top:1px solid rgba(255,255,255,0.07);overflow:hidden;}
+.mus-piano-keys{position:relative;height:100%;width:100%;}
+.mus-white-keys{display:flex;height:100%;gap:1px;padding:0 1px;}
+.mus-wkey{flex:1 1 0;background:#e8ecff;border-radius:0 0 5px 5px;border:1px solid #b0b8d8;display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px;cursor:pointer;transition:background 0.08s,box-shadow 0.08s;position:relative;}
+.mus-wkey-label{font-size:0.80rem;font-weight:800;color:#000;font-family:'JetBrains Mono',monospace;pointer-events:none;}
+.mus-wkey.midi-active{background:#e8852a!important;border-color:#d07520!important;box-shadow:0 0 14px rgba(232,133,42,0.6);}
+.mus-wkey.impact-flash{background:#1db954!important;border-color:#158a3e!important;box-shadow:0 0 18px rgba(29,185,84,0.7);}
+.mus-black-keys{position:absolute;top:0;left:0;right:0;height:60%;pointer-events:none;}
+.mus-bkey{position:absolute;top:0;height:100%;width:2.2%;transform:translateX(-50%);background:#1a1c2a;border-radius:0 0 4px 4px;border:1px solid #0a0b10;transition:background 0.08s,box-shadow 0.08s;}
+.mus-bkey.midi-active{background:#e8852a!important;border-color:#d07520!important;box-shadow:0 0 10px rgba(232,133,42,0.5);}
+.mus-bkey.impact-flash{background:#1db954!important;border-color:#158a3e!important;box-shadow:0 0 14px rgba(29,185,84,0.6);}
 

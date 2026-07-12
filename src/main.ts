@@ -47,8 +47,8 @@ let lockedSlots=Array(8).fill(null);
 let lockedPatterns=Array(8).fill(null);
 let resolutions=Array(8).fill(4);
 
-// ─── MUSETHESIA STATE ─────────────────────────────────────────────────────────
-let museThesiaActive=false,museThesiaRaf=null,museThesiaEvents=[],museThesiaLoopDur=0;
+// ─── MUSETHESIA STATE (deprecated — kept for compatibility)
+
 
 // ─── CHORD / MUSIC DATA ──────────────────────────────────────────────────────
 const ALL_CHORDS=["Am","G","Em","F","C","Dm","Am7","Fmaj7","Gsus4","Em7","Dm7","G7"];
@@ -282,7 +282,10 @@ function updateVisual(cellIdx){
 
   if(isActiveBeat){
     flashPiano(chordNotes);
-    playChordNotes(currentData.progression[mi],0.8);
+    if(museThesiaActive){
+      const color=MEASURE_COLORS[mi%MEASURE_COLORS.length];
+      spawnFallingNotes(chordNotes,color,currentData.progression[mi]);
+    }
   }
 }
 
@@ -513,254 +516,214 @@ function openHistory(){
 function closeHistory(){document.getElementById('histOverlay').classList.remove('open');}
 
 // ─── MUSETHESIA ───────────────────────────────────────────────────────────────
-const NOTE_SEMITONE={'Do':0,'Do#':1,'Ré':2,'Ré#':3,'Mi':4,'Fa':5,'Fa#':6,'Sol':7,'Sol#':8,'La':9,'La#':10,'Si':11};
+const MUS_FIRST_MIDI=48;
+const MUS_LAST_MIDI=96;
+const MUS_NUM_WHITE_KEYS=29;
+const FR_NOTES=['Do','Do#','Ré','Ré#','Mi','Fa','Fa#','Sol','Sol#','La','La#','Si'];
 const MEASURE_COLORS=['#1db954','#f7c948','#e8402a','#4a9eff','#ff6b9d','#a855f7','#22d3ee','#fb923c'];
-const MUSETHESIA_LOOK_AHEAD=2;
-const MUSETHESIA_NOTE_HEIGHT=36;
-const MUSETHESIA_PIANO_HEIGHT=100;
-const FIRST_MIDI=36;
-const LAST_MIDI=84;
-const WHITE_KEY_COUNT=29;
+
+let museThesiaActive=false;
+let museThesiaRaf=null;
+let fallingNotes=[];
+let lastSpawnedCell=-1;
 
 function noteNameToMidiNumber(name,oct){
-  const s=NOTE_SEMITONE[name];
+  const semitones={'Do':0,'Do#':1,'Ré':2,'Ré#':3,'Mi':4,'Fa':5,'Fa#':6,'Sol':7,'Sol#':8,'La':9,'La#':10,'Si':11};
+  const s=semitones[name];
   if(s===undefined)return null;
   return(oct+1)*12+s;
 }
 
-function buildMusesthesiaEvents(){
-  museThesiaEvents=[];
-  if(!currentData||!cellMap.length)return;
-  const cellDuration=60/bpm/4;
-  for(let c=0;c<cellMap.length;c++){
-    const entry=cellMap[c],mi=entry.mesureIdx,lc=entry.localCell;
-    if(currentData.patterns[mi][lc]===1){
-      const chordName=currentData.progression[mi];
-      const noteNames=NOTES_ACC[chordName]||[];
-      const midiNotes=[];
-      const displayNotes=[];
-      noteNames.forEach(n=>{
-        const m=noteNameToMidiNumber(n,4);if(m!==null){midiNotes.push(m);displayNotes.push({name:n,midi:m,oct:4});}
-        const b=noteNameToMidiNumber(n,3);if(b!==null){midiNotes.push(b);displayNotes.push({name:n,midi:b,oct:3});}
-      });
-      museThesiaEvents.push({cell:c,midiNotes,displayNotes,color:MEASURE_COLORS[mi%MEASURE_COLORS.length],chordName});
-    }
+function buildMusethesiaPiano(){
+  const whiteKeys=[],blackKeys=[];
+  let wkIdx=0;
+  for(let m=MUS_FIRST_MIDI;m<=MUS_LAST_MIDI;m++){
+    const semi=m%12,oct=Math.floor(m/12)-1;
+    if([0,2,4,5,7,9,11].includes(semi)){
+      whiteKeys.push({midi:m,label:wkIdx%7===0?FR_NOTES[semi]+oct:''});wkIdx++;
+    }else blackKeys.push({midi:m,wkIdx:wkIdx-1});
   }
-  museThesiaLoopDur=cellMap.length*cellDuration;
-  console.log('[MuseThesia] events built:', museThesiaEvents.map(e=>({
-    cell:e.cell,
-    chord:e.chordName,
-    notes:e.displayNotes.map(d=>d.name+'('+d.midi+')')
-  })));
+  let html='<div class="mus-piano-keys"><div class="mus-white-keys">';
+  whiteKeys.forEach(k=>{html+='<div class="mus-wkey" data-midi="'+k.midi+'"><span class="mus-wkey-label">'+k.label+'</span></div>';});
+  html+='</div><div class="mus-black-keys">';
+  blackKeys.forEach(k=>{html+='<div class="mus-bkey" data-midi="'+k.midi+'" style="left:'+((k.wkIdx+1)/MUS_NUM_WHITE_KEYS)*100+'%"></div>';});
+  html+='</div></div>';
+  return html;
+}
+
+function midiToCanvasX(midi,canvasW){
+  let wkIdx=0;
+  for(let m=MUS_FIRST_MIDI;m<=MUS_LAST_MIDI;m++){
+    if([0,2,4,5,7,9,11].includes(m%12)){if(m===midi)return(wkIdx+0.5)*(canvasW/MUS_NUM_WHITE_KEYS);wkIdx++;}
+    else if(m===midi)return wkIdx*(canvasW/MUS_NUM_WHITE_KEYS);
+  }
+  return((midi-MUS_FIRST_MIDI)/(MUS_LAST_MIDI-MUS_FIRST_MIDI))*canvasW;
+}
+
+function spawnFallingNotes(notes,color,chordName){
+  if(!museThesiaActive)return;
+  const canvas=document.getElementById('fallCanvas');
+  if(!canvas||!canvas.width)return;
+  const duration=(60/bpm)*2;
+  const tonicLabel=chordName?(ACCORDS_FR[chordName]||chordName):'';
+  notes.forEach((n,i)=>{
+    let midi=noteNameToMidiNumber(n,4);
+    if(midi===null||midi<MUS_FIRST_MIDI||midi>MUS_LAST_MIDI)midi=noteNameToMidiNumber(n,3);
+    if(midi===null||midi<MUS_FIRST_MIDI||midi>MUS_LAST_MIDI)return;
+    fallingNotes.push({midi,x:midiToCanvasX(midi,canvas.width),color,startTime:performance.now(),duration,label:i===0?tonicLabel:'',chord:i===0?chordName:''});
+  });
+}
+
+function spawnImpactFlash(midi){
+  const el=document.querySelector('[data-midi="'+midi+'"]');
+  if(!el)return;
+  el.classList.add('impact-flash');
+  setTimeout(()=>el.classList.remove('impact-flash'),200);
 }
 
 function setupMusesthesiaCanvas(){
   const canvas=document.getElementById('fallCanvas');
   if(!canvas)return;
   const parent=canvas.parentElement;
+  const piano=document.getElementById('museThesiaPiano');
+  const pianoH=piano?Math.max(0,piano.getBoundingClientRect().height||140):140;
   const rect=parent.getBoundingClientRect();
+  const oldW=canvas.width;
   canvas.width=rect.width;
-  canvas.height=rect.height;
+  canvas.height=Math.max(100,rect.height-pianoH);
+  // remap x of existing falling notes on resize
+  if(oldW&&oldW!==canvas.width){
+    for(const n of fallingNotes)n.x=midiToCanvasX(n.midi,canvas.width);
+  }
 }
 
-function drawMusesthesiaPiano(ctx,w,h){
-  const pianoY=h-MUSETHESIA_PIANO_HEIGHT;
-  ctx.fillStyle='#1a1c2a';
-  ctx.fillRect(0,pianoY,w,MUSETHESIA_PIANO_HEIGHT);
-  const whiteKeyWidth=w/WHITE_KEY_COUNT;
-  let wkIdx=0;
-  for(let m=FIRST_MIDI;m<=LAST_MIDI;m++){
-    const semi=m%12;
-    if([0,2,4,5,7,9,11].includes(semi)){
-      const x=wkIdx*whiteKeyWidth;
-      ctx.fillStyle='#e8ecff';
-      ctx.fillRect(x+1,pianoY+1,whiteKeyWidth-2,MUSETHESIA_PIANO_HEIGHT-2);
-      ctx.fillStyle='rgba(0,0,0,0.25)';
-      ctx.font='8px JetBrains Mono,monospace';
-      ctx.textAlign='center';
-      const label=['Do','Ré','Mi','Fa','Sol','La','Si'][[0,2,4,5,7,9,11].indexOf(semi)];
-      ctx.fillText(label,x+whiteKeyWidth/2,pianoY+MUSETHESIA_PIANO_HEIGHT-6);
-      wkIdx++;
-    }
-  }
-  wkIdx=0;
-  for(let m=FIRST_MIDI;m<=LAST_MIDI;m++){
-    const semi=m%12;
-    if([1,3,6,8,10].includes(semi)){
-      const prevWKIdx=Math.max(0,wkIdx-1);
-      const prevWhiteX=prevWKIdx*whiteKeyWidth;
-      ctx.fillStyle='#0a0b10';
-      ctx.fillRect(prevWhiteX+whiteKeyWidth*0.65+1,pianoY,whiteKeyWidth*0.35-2,MUSETHESIA_PIANO_HEIGHT*0.6);
-    }
-    if([0,2,4,5,7,9,11].includes(semi))wkIdx++;
-  }
-  ctx.strokeStyle='rgba(232,64,42,0.4)';
-  ctx.lineWidth=2;
-  ctx.beginPath();
-  ctx.moveTo(0,pianoY-1);
-  ctx.lineTo(w,pianoY-1);
-  ctx.stroke();
-}
-
-function midiToX(midiNote,w){
-  let wkIdx=0;
-  for(let m=FIRST_MIDI;m<=LAST_MIDI;m++){
-    const semi=m%12;
-    if([0,2,4,5,7,9,11].includes(semi)){
-      if(m===midiNote)return(wkIdx+0.5)*(w/WHITE_KEY_COUNT);
-      wkIdx++;
-    }
-  }
-  return((midiNote-FIRST_MIDI)/(LAST_MIDI-FIRST_MIDI))*w;
-}
 function museThesiaLoop(){
   if(!museThesiaActive)return;
   const canvas=document.getElementById('fallCanvas');
   if(!canvas||!canvas.width||!canvas.height){museThesiaRaf=requestAnimationFrame(museThesiaLoop);return;}
-  const ctx=canvas.getContext('2d'),w=canvas.width,h=canvas.height;
-  const now=(audioCtx||getCtx()).currentTime;
+  const ctx=canvas.getContext('2d'),w=canvas.width,h=canvas.height,now=performance.now();
 
   ctx.clearRect(0,0,w,h);
-  ctx.fillStyle='#0a0b10';
+  ctx.fillStyle='#0d0e15';
   ctx.fillRect(0,0,w,h);
 
-  const fallHeight=h-MUSETHESIA_PIANO_HEIGHT;
-  const PREVIEW_H=50;
-
-  // grid lines for white keys
+  // grid lines
   ctx.fillStyle='rgba(255,255,255,0.02)';
-  let wkIdx=0;
-  for(let m=FIRST_MIDI;m<=LAST_MIDI;m++){
+  let wkC=0;
+  for(let m=MUS_FIRST_MIDI;m<=MUS_LAST_MIDI;m++){
     if([0,2,4,5,7,9,11].includes(m%12)){
-      ctx.fillRect(wkIdx*(w/WHITE_KEY_COUNT),PREVIEW_H,0.5,fallHeight-PREVIEW_H);
-      wkIdx++;
+      ctx.fillRect(wkC*(w/MUS_NUM_WHITE_KEYS),0,0.5,h);
+      wkC++;
     }
-  }
-
-  // compute base time from scheduler state
-  const cellDuration=60/bpm/4;
-  const baseTime=nextBeatTime-currentCell*cellDuration;
-
-  // collect visible events (using scheduler-aligned times)
-  const visibleEvents=[];
-  for(const event of museThesiaEvents){
-    let t=baseTime+event.cell*cellDuration;
-    while(t<now-1)t+=museThesiaLoopDur;
-    while(t>now+MUSETHESIA_LOOK_AHEAD+0.5)t-=museThesiaLoopDur;
-    if(t>=now-0.5&&t<=now+MUSETHESIA_LOOK_AHEAD+0.5){
-      visibleEvents.push({event,t});
-    }
-  }
-  visibleEvents.sort((a,b)=>a.t-b.t);
-
-  // next chord preview badge
-  let nextEvent=null,nextT=Infinity;
-  for(const {event,t} of visibleEvents){
-    if(t>now&&t<nextT){nextT=t;nextEvent=event;}
-  }
-  if(nextEvent){
-    const py=6;
-    const chordLabel=ACCORDS_FR[nextEvent.chordName]||nextEvent.chordName;
-    ctx.fillStyle=nextEvent.color+'55';
-    ctx.beginPath();ctx.roundRect(w/2-60,py,120,24,6);ctx.fill();
-    ctx.fillStyle=nextEvent.color+'bb';
-    ctx.font='14px Syne,sans-serif';
-    ctx.textAlign='center';
-    ctx.fillText('▶ '+chordLabel,w/2,py+17);
-    ctx.fillStyle='rgba(255,255,255,0.2)';
-    ctx.font='10px JetBrains Mono,monospace';
-    const secs=(nextT-now).toFixed(1);
-    ctx.fillText('dans '+secs+'s',w/2,py+32);
   }
 
   // draw falling notes
-  for(const {event,t} of visibleEvents){
-    const progress=1-(t-now)/MUSETHESIA_LOOK_AHEAD;
-    const y=Math.max(-MUSETHESIA_NOTE_HEIGHT,Math.min(fallHeight,progress*(fallHeight-MUSETHESIA_NOTE_HEIGHT)));
-
-    const noteW=w/WHITE_KEY_COUNT*0.8;
-
-    for(let ni=0;ni<event.midiNotes.length;ni++){
-      const mn=event.midiNotes[ni];
-      const x=midiToX(mn,w);
-      ctx.fillStyle=event.color+'D9';
-      ctx.shadowColor=event.color+'66';
-      ctx.shadowBlur=4;
-      ctx.beginPath();
-      ctx.roundRect(x-noteW/2,y,noteW,MUSETHESIA_NOTE_HEIGHT,4);
-      ctx.fill();
-      ctx.shadowBlur=0;
-      if(ni<event.displayNotes.length){
-        const dn=event.displayNotes[ni];
-        ctx.fillStyle='rgba(255,255,255,0.7)';
-        ctx.font='10px JetBrains Mono,monospace';
-        ctx.textAlign='center';
-        ctx.fillText(dn.name,x,y+14);
-      }
+  const active=[];
+  for(const n of fallingNotes){
+    const elapsed=(now-n.startTime)/1000;
+    const progress=Math.min(1,elapsed/n.duration);
+    const y=progress*h;
+    if(progress>=1){spawnImpactFlash(n.midi);if(n.chord){playChordNotes(n.chord,0.8);updateMusethesiaChordInfo(n.chord,NOTES_ACC[n.chord]||[]);}continue;}
+    active.push(n);
+    const nearness=Math.min(1,Math.max(0,(progress-0.15)/0.85));
+    const noteAlpha=0.4+0.6*nearness;
+    const noteScale=1+0.1*nearness;
+    const noteW=(w/MUS_NUM_WHITE_KEYS)*0.8;
+    const nw=noteW*noteScale;
+    const nh=36*noteScale;
+    const ny=y+36-nh;
+    const r=6*noteScale;
+    ctx.save();
+    ctx.globalAlpha=noteAlpha;
+    const grad=ctx.createLinearGradient(0,ny,0,ny+nh);
+    grad.addColorStop(0,n.color+'80');
+    grad.addColorStop(0.4,n.color+'bb');
+    grad.addColorStop(1,n.color);
+    ctx.fillStyle=grad;
+    ctx.shadowColor=n.color+'77';
+    ctx.shadowBlur=10+8*nearness;
+    ctx.beginPath();ctx.roundRect(n.x-nw/2,ny,nw,nh,r);ctx.fill();
+    ctx.shadowBlur=0;
+    ctx.globalAlpha=1;
+    if(n.label){
+      const labelY=ny+nh/2;
+      ctx.font='bold 11px JetBrains Mono,monospace';
+      ctx.textAlign='center';ctx.textBaseline='middle';
+      const tw=ctx.measureText(n.label).width;
+      ctx.fillStyle='rgba(0,0,0,0.55)';
+      ctx.beginPath();ctx.roundRect(n.x-tw/2-4,labelY-9,tw+8,18,4);ctx.fill();
+      ctx.fillStyle='#fff';
+      ctx.fillText(n.label,n.x,labelY+0.5);
     }
-
-    // chord label centered on the group
-    const midIdx=Math.min(2,event.displayNotes.length-1);
-    const mid=event.displayNotes[midIdx];
-    if(mid){
-      ctx.fillStyle='rgba(255,255,255,0.55)';
-      ctx.font='11px Syne,sans-serif';
-      ctx.textAlign='center';
-      const labelX=midiToX(mid.midi,w);
-      ctx.fillText(ACCORDS_FR[event.chordName]||event.chordName,labelX,y+25);
-    }
+    ctx.restore();
   }
+  fallingNotes=active;
 
-  // hit line at top of piano
-  ctx.strokeStyle='rgba(232,64,42,0.5)';
-  ctx.lineWidth=2;
-  ctx.setLineDash([8,5]);
-  ctx.beginPath();
-  ctx.moveTo(0,fallHeight);
-  ctx.lineTo(w,fallHeight);
-  ctx.stroke();
-  ctx.setLineDash([]);
+  // impact line
+  const beatDur=60000/Math.max(1,bpm||80);
+  const beatPhase=((now%beatDur)/beatDur);
+  const pulse=0.3+0.7*Math.abs(Math.sin(beatPhase*Math.PI*2));
+  const ilY=h-8;
+  const ilGrad=ctx.createLinearGradient(0,ilY,w,ilY);
+  ilGrad.addColorStop(0,'rgba(29,185,84,0)');
+  ilGrad.addColorStop(0.2,'rgba(29,185,84,0)');
+  ilGrad.addColorStop(0.35,`rgba(29,185,84,${0.5*pulse})`);
+  ilGrad.addColorStop(0.65,`rgba(29,185,84,${0.5*pulse})`);
+  ilGrad.addColorStop(0.8,'rgba(29,185,84,0)');
+  ilGrad.addColorStop(1,'rgba(29,185,84,0)');
+  ctx.shadowColor='rgba(29,185,84,0.4)';
+  ctx.shadowBlur=15*pulse;
+  ctx.strokeStyle=ilGrad;
+  ctx.lineWidth=3;
+  ctx.beginPath();ctx.moveTo(0,ilY);ctx.lineTo(w,ilY);ctx.stroke();
+  ctx.shadowBlur=0;
 
-  drawMusesthesiaPiano(ctx,w,h);
   museThesiaRaf=requestAnimationFrame(museThesiaLoop);
 }
 
 function startMusesthesia(){
   if(!museThesiaActive)return;
-  const canvas=document.getElementById('fallCanvas');
-  if(canvas)setupMusesthesiaCanvas();
-  buildMusesthesiaEvents();
-  const info=document.getElementById('museThesiaInfo');
-  if(info&&currentData)info.textContent=`${currentData.tonality==='Am'?'La min':'Do maj'} · ${currentData.progression.map(a=>ACCORDS_FR[a]||a).join(' → ')} · ${bpm} BPM · ${currentData.diff}`;
+  if(currentData){
+    const chord=currentData.progression[0];
+    updateMusethesiaChordInfo(chord,NOTES_ACC[chord]||[]);
+  }
+  fallingNotes=[];lastSpawnedCell=-1;
   if(museThesiaRaf)cancelAnimationFrame(museThesiaRaf);
   museThesiaRaf=requestAnimationFrame(museThesiaLoop);
 }
 
 function stopMusesthesia(){
   if(museThesiaRaf){cancelAnimationFrame(museThesiaRaf);museThesiaRaf=null;}
+  fallingNotes=[];
   const canvas=document.getElementById('fallCanvas');
   if(canvas){const ctx=canvas.getContext('2d');if(ctx)ctx.clearRect(0,0,canvas.width,canvas.height);}
-  const info=document.getElementById('museThesiaInfo');
-  if(info)info.textContent='';
+}
+
+function updateMusethesiaChordInfo(chordName,notes){
+  const overlay=document.getElementById('museThesiaOverlayInfo');
+  if(!overlay||!currentData)return;
+  const nomFR=ACCORDS_FR[chordName]||chordName;
+  const base=(currentData.tonality==='Am'?'La min':'Do maj')+' · '+currentData.progression.map(a=>ACCORDS_FR[a]||a).join(' → ')+' · '+bpm+' BPM · '+currentData.diff;
+  const chordStr=notes?'<span class="musethesia-chord-highlight">'+nomFR+' · '+notes.join(' · ')+'</span>':'';
+  overlay.innerHTML=chordStr+(chordStr?' · ':'')+base;
 }
 
 function toggleMusesthesia(){
   museThesiaActive=!museThesiaActive;
-  const view=document.getElementById('museThesiaView');
-  const main=document.querySelector('.main');
-  const btn=document.getElementById('visToggle');
-  const bottomBar=document.querySelector('.bottom-bar');
-
+  const view=document.getElementById('museThesiaView'),main=document.querySelector('.main'),btn=document.getElementById('visToggle'),bottomBar=document.querySelector('.bottom-bar');
   if(museThesiaActive){
-    view.style.display='flex';
-    main.style.display='none';
-    bottomBar.style.display='none';
+    view.style.display='flex';main.style.display='none';bottomBar.style.display='none';
     btn.textContent='🎹 Séquenceur';
+    const piano=document.getElementById('museThesiaPiano');
+    if(piano)piano.innerHTML=buildMusethesiaPiano();
+    setupMusesthesiaCanvas();
+    if(currentData){
+      const chord=currentData.progression[0];
+      updateMusethesiaChordInfo(chord,NOTES_ACC[chord]||[]);
+    }
     if(isPlaying)startMusesthesia();
   }else{
-    view.style.display='none';
-    main.style.display='grid';
-    bottomBar.style.display='flex';
+    view.style.display='none';main.style.display='grid';bottomBar.style.display='flex';
     btn.textContent='🎹 Musethesia';
     stopMusesthesia();
   }
@@ -805,13 +768,15 @@ window.addEventListener('keydown',e=>{
 })();
 
 document.addEventListener('midi-note-on', ((e) => {
-    const { note, velocity } = e.detail;
-    console.log(`🎹 Note ON: ${note} (v:${velocity})`);
+    const { note } = e.detail;
+    const el = document.querySelector(`[data-midi="${note}"]`);
+    if (el) el.classList.add('midi-active');
 }) as EventListener);
 
 document.addEventListener('midi-note-off', ((e) => {
     const { note } = e.detail;
-    console.log(`🔇 Note OFF: ${note}`);
+    const el = document.querySelector(`[data-midi="${note}"]`);
+    if (el) el.classList.remove('midi-active');
 }) as EventListener);
 
 document.addEventListener('midi-devices-changed', ((e) => {

@@ -285,7 +285,6 @@
   <button class="btn-lockrythm" id="lockAllRythmsBtn">🎶 Rythmes</button>
   <button class="btn-visual" id="visToggle">🎹 Musethesia</button>
   <button class="play-btn" id="playBtnTop">▶</button>
-  <span class="musethesia-info" id="museThesiaInfo"></span>
 </div>
 
 <div class="edit-banner">✏️ Mode édition — clique les cases · <kbd style="background:rgba(255,255,255,0.1);border-radius:3px;padding:1px 4px;font-family:monospace;">E</kbd> ou ▶ pour quitter</div>
@@ -296,7 +295,9 @@
 </div>
 
 <div class="musethesia-view" id="museThesiaView" style="display:none;">
+  <div class="musethesia-overlay-info" id="museThesiaOverlayInfo"></div>
   <canvas id="fallCanvas"></canvas>
+  <div class="musethesia-piano" id="museThesiaPiano"></div>
 </div>
 
 <div class="bottom-bar">
