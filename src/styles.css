@@ -211,6 +211,7 @@ body.edit-mode .beat.rest:hover{background:rgba(29,185,84,0.25);border-color:rgb
 .defi-section{background:var(--surface2);border-radius:11px;border:1px solid var(--accent2);padding:10px 14px;}
 .defi-section h3{font-size:0.6rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--accent2);margin-bottom:6px;}
 .defi-text{font-size:0.92rem;font-weight:700;line-height:1.4;color:var(--text);}
+.defi-text+.defi-text{margin-top:8px;padding-top:8px;border-top:1px dashed rgba(232,64,42,0.2);}
 
 .notes-row{display:flex;gap:4px;flex-wrap:wrap;}
 .note-pill{background:var(--beat-off);border:1px solid var(--border);border-radius:6px;padding:2px 8px;font-family:'JetBrains Mono',monospace;font-size:0.78rem;font-weight:700;color:var(--text);}

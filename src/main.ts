@@ -10,18 +10,18 @@ const RES_LABELS   = { 1:'1t', 2:'2t', 4:'4t' };
 const PATTERNS = {
   4:{
     doux:[[1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0],[1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0],[1,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0],[1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0],[0,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0],[1,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0]],
-    medium:[[1,0,0,0,1,0,0,0,1,0,0,0,0,0,1,0],[1,0,0,0,1,0,0,0,0,0,1,0,1,0,0,0],[1,0,0,0,0,0,1,0,1,0,0,0,1,0,0,0],[1,0,0,0,1,0,1,0,0,0,0,0,1,0,0,0],[1,0,0,0,1,0,0,0,1,0,0,0,1,0,1,0],[1,0,0,0,1,0,0,0,1,0,1,0,0,0,0,0]],
-    spicy:[[1,0,1,0,0,0,1,0,0,0,0,0,1,0,0,0],[1,0,0,0,0,0,1,0,1,0,1,0,0,0,1,0],[1,0,0,0,1,0,0,0,0,0,1,0,0,0,1,0],[1,0,1,0,0,0,0,0,1,0,1,0,1,0,0,0],[1,0,1,0,0,0,1,0,0,0,0,0,1,0,0,0]],
+     épicé:[[1,0,0,0,1,0,0,0,1,0,0,0,0,0,1,0],[1,0,0,0,1,0,0,0,0,0,1,0,1,0,0,0],[1,0,0,0,0,0,1,0,1,0,0,0,1,0,0,0],[1,0,0,0,1,0,1,0,0,0,0,0,1,0,0,0],[1,0,0,0,1,0,0,0,1,0,0,0,1,0,1,0],[1,0,0,0,1,0,0,0,1,0,1,0,0,0,0,0]],
+    enflammé:[[1,0,1,0,0,0,1,0,0,0,0,0,1,0,0,0],[1,0,0,0,0,0,1,0,1,0,1,0,0,0,1,0],[1,0,0,0,1,0,0,0,0,0,1,0,0,0,1,0],[1,0,1,0,0,0,0,0,1,0,1,0,1,0,0,0],[1,0,1,0,0,0,1,0,0,0,0,0,1,0,0,0]],
   },
   2:{
     doux:[[1,0,0,0,1,0,0,0],[1,0,0,0,0,0,0,0],[0,0,0,0,1,0,0,0],[1,0,0,0,1,0,1,0]],
-    medium:[[1,0,0,0,0,0,1,0],[1,0,1,0,0,0,0,0],[1,0,0,0,1,0,0,0],[0,0,1,0,1,0,0,0],[1,0,0,0,0,0,1,0]],
-    spicy:[[1,0,1,0,0,0,1,0],[0,0,1,0,1,0,1,0],[1,0,1,0,1,0,0,0],[1,0,0,0,1,0,1,0]],
+    épicé:[[1,0,0,0,0,0,1,0],[1,0,1,0,0,0,0,0],[1,0,0,0,1,0,0,0],[0,0,1,0,1,0,0,0],[1,0,0,0,0,0,1,0]],
+    enflammé:[[1,0,1,0,0,0,1,0],[0,0,1,0,1,0,1,0],[1,0,1,0,1,0,0,0],[1,0,0,0,1,0,1,0]],
   },
   1:{
     doux:[[1,0,0,0],[1,0,0,0],[0,0,1,0],[1,0,1,0]],
-    medium:[[1,0,0,0],[0,0,1,0],[1,0,1,0],[1,0,0,0]],
-    spicy:[[1,0,1,0],[0,0,1,0],[1,0,0,0],[1,0,1,0]],
+    épicé:[[1,0,0,0],[0,0,1,0],[1,0,1,0],[1,0,0,0]],
+    enflammé:[[1,0,1,0],[0,0,1,0],[1,0,0,0],[1,0,1,0]],
   }
 };
 function getRandPattern(res,diff){const p=PATTERNS[res][diff];return[...p[Math.floor(Math.random()*p.length)]];}
@@ -56,14 +56,76 @@ const ACCORDS_FR={"Am":"LAm","G":"SOL","Em":"MIm","F":"FA","C":"DO","Dm":"RÉm",
 const NOTES_ACC={"Am":["La","Do","Mi"],"G":["Sol","Si","Ré"],"Em":["Mi","Sol","Si"],"F":["Fa","La","Do"],"C":["Do","Mi","Sol"],"Dm":["Ré","Fa","La"],"Am7":["La","Do","Mi","Sol"],"Fmaj7":["Fa","La","Do","Mi"],"Gsus4":["Sol","Do","Ré"],"Em7":["Mi","Sol","Si","Ré"],"Dm7":["Ré","Fa","La","Do"],"G7":["Sol","Si","Ré","Fa"]};
 const NOTE_FREQ={"Do":261.63,"Do#":277.18,"Ré":293.66,"Ré#":311.13,"Mi":329.63,"Fa":349.23,"Fa#":369.99,"Sol":392.00,"Sol#":415.30,"La":440.00,"La#":466.16,"Si":493.88};
 const CONTRAINTES={
-  doux:["Notes : La · Do · Mi · Sol — pentatonique seulement","Commence chaque mesure sur La ou Mi","Mouvement conjoint uniquement — pas de saut","Termine sur La ou Do à la fin de la boucle","Une note par temps — pas de croches pour l'instant"],
-  medium:["Notes : Mi · Sol · La · Si · Do · Ré","Commence par la tonique de chaque accord","Maximum un saut par mesure (tierce ou quarte)","Évite de répéter deux fois de suite la même note","Termine chaque mesure sur une note de l'accord actif","Essaie une note de passage entre deux notes éloignées","Varie les nuances : au moins un changement de dynamique"],
-  spicy:["Toutes les notes de la gamme disponibles","Syncope obligatoire sur le 2e ou 4e temps","Octaves à la main droite sur les temps forts","Saut + retour conjoint dans chaque mesure","Monte en tessiture sur la 1e moitié, redescends sur la 2e","Ajoute une broderie (note voisine aller-retour rapide)","Explore le Si bémol pour une couleur blues"]
+  doux:[
+    "Joue avec des notes qui sonnent bien ensemble.",
+    "Commence chaque mesure sur une note qui t'inspire.",
+    "Fais des petits sauts, pas des grands.",
+    "Termine ta phrase sur une note qui repose l'oreille.",
+    "Une note par temps — prends ton temps.",
+    "Commence chaque phrase par une note tenue, puis laisse-la s'éteindre.",
+    "Joue des notes qui se touchent, comme si tu marchais sur des cailloux.",
+    "Chaque note doit avoir sa propre respiration.",
+    "Imagine que tu chantes la note avant de la jouer."
+  ],
+  épicé:[
+    "Commence par la note principale de l'accord.",
+    "Fais un seul grand saut par mesure.",
+    "Évite de répéter deux fois la même note de suite.",
+    "Termine chaque mesure sur une note de l'accord.",
+    "Essaie une note de passage entre deux notes éloignées.",
+    "Varie les nuances : une phrase forte, une phrase douce.",
+    "Fais une petite pause avant la dernière note de la mesure.",
+    "Joue trois notes qui montent, puis trois qui descendent.",
+    "Commence doucement, puis accélère sur la fin de la phrase.",
+    "Joue une note aiguë, puis une note grave, comme un appel et une réponse."
+  ],
+  enflammé:[
+    "Toutes les notes sont permises — ose tout.",
+    "Joue en décalé sur le 2e ou 4e temps (syncope).",
+    "Double les notes à la main droite sur les temps forts.",
+    "Joue deux notes éloignées, puis reviens tout près en douceur.",
+    "Monte dans les aigus, puis redescends progressivement.",
+    "Ajoute une petite note de passage rapide (broderie).",
+    "Ose une note bleue pour une couleur blues.",
+    "Joue la même phrase deux fois, mais change complètement la fin.",
+    "Place une note très aiguë sur le temps faible de chaque mesure.",
+    "Crée un mur de notes sur les temps forts (accords plaqués), puis un vide sur les temps faibles.",
+    "Joue ta main gauche en décalé par rapport à ta main droite."
+  ]
 };
 const DEFIS={
-  doux:["Joue pianissimo — comme si tu ne voulais pas réveiller quelqu'un","Garde les yeux fermés pendant toute la session","Reste dans une seule octave","Chaque note dure exactement un temps, ni plus ni moins","Ta mélodie doit terminer sur La"],
-  medium:["Trille léger sur le 3e temps de chaque mesure","Alterner fort/doux entre mesures paires et impaires","Glissando doux juste avant chaque changement d'accord","Finir à l'unisson avec la main gauche sur le dernier temps","Répète un motif de 2 notes et fais-le évoluer","Joue uniquement sur les contretemps"],
-  spicy:["Trille + syncope sur chaque mesure","Main droite en octaves, main gauche basses","Crée une variation mélodique différente pour chaque accord","Motif de 3 notes rapides en anacrouse avant chaque accord","Crescendo puis diminuendo en reprenant"]
+  doux:[
+    "Joue tout doucement — comme si tu ne voulais pas réveiller quelqu'un.",
+    "Ferme les yeux et improvise sans regarder le clavier.",
+    "Reste dans une seule zone du clavier (une octave).",
+    "Chaque note dure un temps, pas plus.",
+    "Ta mélodie doit finir sur la note qui donne son nom à l'accord.",
+    "Comme si tu jouais pour un enfant qui s'endort.",
+    "N'utilise que les doigts 2, 3 et 4 (pas le pouce ni l'auriculaire).",
+    "Improvise en pensant à un paysage, pas à des notes."
+  ],
+  épicé:[
+    "Balance rapidement deux notes voisines sur le 3e temps.",
+    "Joue une mesure fort, la suivante douce, et ainsi de suite.",
+    "Glisse doucement d'une note à l'autre avant chaque changement d'accord.",
+    "Finis sur la même note que la main gauche.",
+    "Répète un petit motif de 2 ou 3 notes, puis change une note à chaque répétition.",
+    "Joue uniquement sur les temps faibles (contretemps).",
+    "Joue une phrase, puis son reflet inversé (comme un miroir).",
+    "Laisse une note sonner longtemps, puis joue une cascade rapide.",
+    "Improvise comme si tu racontais une histoire à un ami.",
+    "Joue deux/trois notes rapides à la main droite, et des notes graves à la main gauche."
+  ],
+  enflammé:[
+    "Joue deux notes rapides sur un temps faible, puis une note forte sur le temps suivant.",
+    "Joue des intervalles (deux notes en même temps) à la main droite, et une basse différente à la main gauche.",
+    "Crée une mélodie différente pour chaque accord.",
+    "Commence ta phrase un tout petit peu avant le premier temps de la mesure.",
+    "Monte en intensité jusqu'à la moitié de la session, puis redescends doucement.",
+    "Joue une phrase très rapide, puis un long silence, puis une autre phrase.",
+    "Ta main gauche joue une basse régulière, ta main droite improvise en décalé.",
+    "Monte en tension sur 4 mesures, puis relâche tout sur la 5e."
+  ]
 };
 const PROGRESSIONS_AM=[["Am","G","F","G"],["Am","F","C","G"],["Am","Em","F","G"],["Am","C","G","Am"],["Am","Dm","G","Am"],["Em","F","G","Am"],["Am","G","Am","F"],["Am","Am7","F","G"],["Am","Em","Dm","G"],["Am","F","G","Em"],["Dm","G","Am","Em"],["Am","Fmaj7","G","Em7"],["Am","Dm","Em","Am"],["Am","G","F","Em"]];
 const PROGRESSIONS_C=[["C","G","Am","F"],["C","Am","F","G"],["C","F","G","Am"],["C","G","F","C"],["C","Am","G","F"],["C","F","C","G"],["C","Em","F","G"],["C","Dm","G","C"],["C","G","Am","Em"],["C","Fmaj7","G","Em7"],["C","Am","Dm","G"]];
@@ -90,9 +152,11 @@ function genererCarte(regenRhythmsOnly=false){
   const base=getRandom(tonality==='Am'?PROGRESSIONS_AM:PROGRESSIONS_C);
   const progression=Array.from({length:nbMesures},(_,i)=>lockedSlots[i]!==null?lockedSlots[i]:base[i%base.length]);
   const patterns=Array.from({length:nbMesures},(_,i)=>lockedPatterns[i]!==null?[...lockedPatterns[i]]:getRandPattern(resolutions[i],diff));
-  const cp=CONTRAINTES[diff];const contraintes=[];const nb=diff==='doux'?3:diff==='medium'?4:5;
+  const cp=CONTRAINTES[diff];const contraintes=[];const nb=diff==='doux'?3:diff==='épicé'?4:5;
   while(contraintes.length<nb){const c=getRandom(cp);if(!contraintes.includes(c))contraintes.push(c);}
-  return{tonality,progression,patterns,contraintes,defi:getRandom(DEFIS[diff]),diff,nbMesures};
+  const dp=DEFIS[diff];const defis=[];const nbDefis=diff==='doux'?2:3;
+  while(defis.length<nbDefis){const d=getRandom(dp);if(!defis.includes(d))defis.push(d);}
+  return{tonality,progression,patterns,contraintes,defis,diff,nbMesures};
 }
 
 // ─── RESOLUTION ──────────────────────────────────────────────────────────────
@@ -181,11 +245,11 @@ function playClick(time,strong){
   const buf=ctx.createBuffer(1,ctx.sampleRate*0.04,ctx.sampleRate);
   const d=buf.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,8);
   const noise=ctx.createBufferSource();noise.buffer=buf;
-  const ng=ctx.createGain();ng.gain.setValueAtTime(strong?0.484:0.1936,time);ng.gain.exponentialRampToValueAtTime(0.001,time+0.04);
+  const ng=ctx.createGain();ng.gain.setValueAtTime(strong?0.4356:0.17424,time);ng.gain.exponentialRampToValueAtTime(0.001,time+0.04);
   noise.connect(ng);ng.connect(masterGain);noise.start(time);noise.stop(time+0.05);
   const osc=ctx.createOscillator();const og=ctx.createGain();
   osc.type='sine';osc.frequency.setValueAtTime(strong?1000:700,time);osc.frequency.exponentialRampToValueAtTime(strong?600:400,time+0.03);
-  og.gain.setValueAtTime(strong?0.3344:0.1408,time);og.gain.exponentialRampToValueAtTime(0.001,time+0.03);
+  og.gain.setValueAtTime(strong?0.30096:0.12672,time);og.gain.exponentialRampToValueAtTime(0.001,time+0.03);
   osc.connect(og);og.connect(masterGain);osc.start(time);osc.stop(time+0.04);
 }
 
@@ -388,7 +452,7 @@ function renderCard(data){
   const si=document.getElementById('sessionInfo');
   if(si)si.textContent=`Session ${num} · ${data.nbMesures} mesures · ${data.diff}`;
 
-  const diffCol={doux:'#1db954',medium:'#f7c948',spicy:'#e8402a'}[data.diff];
+  const diffCol={doux:'#1db954',épicé:'#f7c948',enflammé:'#e8402a'}[data.diff];
 
   let leftHTML=`
     <div class="panel-title">Main gauche — accords & rythme</div>
@@ -466,7 +530,7 @@ function renderCard(data){
       <h3>Contraintes · <span style="color:${diffCol}">${data.diff}</span></h3>
       ${data.contraintes.map(c=>`<div class="constraint-item"><div class="constraint-dot"></div><span>${c}</span></div>`).join('')}
     </div>
-    <div class="defi-section"><h3>⚡ Défi</h3><div class="defi-text">${data.defi}</div></div>`;
+    <div class="defi-section"><h3>⚡ Défis</h3>${data.defis.map(d=>`<div class="defi-text">${d}</div>`).join('')}</div>`;
 
   document.getElementById('panelLeft').innerHTML=leftHTML;
   document.getElementById('panelRight').innerHTML=rightHTML;
@@ -524,9 +588,11 @@ function openHistory(){
       if(h.resolutions)for(let i=0;i<h.resolutions.length;i++)resolutions[i]=h.resolutions[i];
       const diff=document.getElementById('difficulty').value;
       const patterns=h.progression.map((_,i)=>lockedPatterns[i]!==null?[...lockedPatterns[i]]:getRandPattern(resolutions[i],diff));
-      const cp=CONTRAINTES[diff];const contraintes=[];const nb=diff==='doux'?3:diff==='medium'?4:5;
+  const cp=CONTRAINTES[diff];const contraintes=[];const nb=diff==='doux'?3:diff==='épicé'?4:5;
       while(contraintes.length<nb){const c=getRandom(cp);if(!contraintes.includes(c))contraintes.push(c);}
-      renderCard({tonality:h.tonality,progression:[...h.progression],patterns,contraintes,defi:getRandom(DEFIS[diff]),diff,nbMesures:h.nbMesures});
+      const dp=DEFIS[diff];const defis=[];const nbDefis=diff==='doux'?2:3;
+      while(defis.length<nbDefis){const d=getRandom(dp);if(!defis.includes(d))defis.push(d);}
+      renderCard({tonality:h.tonality,progression:[...h.progression],patterns,contraintes,defis,diff,nbMesures:h.nbMesures});
     });
   });
   document.getElementById('histOverlay').classList.add('open');

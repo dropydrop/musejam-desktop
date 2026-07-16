@@ -1,27 +1,16 @@
 🎯 Plan Post-MVP
 
 
-🟡 Haute : Contraintes \& Défi enrichis
+🟡 Moyenne : Rendu des notes défilantes
 
-Objectif : Remplacer les textes actuels (parfois trop techniques) par des invites simples, inspirantes, actionnables.
-
-
-Exemples :
-
-"Joue une note par temps" → "Tiens-toi au rythme"
-
-"Syncope obligatoire" → "Joue une note en décalé sur le 2e temps"
-
-"Varie les nuances" → "Joue une phrase forte puis une phrase douce"
-
+Objectif : Affiner le rendu visuel (moins de scintillement, plus de clarté).
 
 À faire :
 
-Réécrire les listes CONTRAINTES et DEFIS dans main.ts
+Envoie-moi des screenshots → je te dirai précisément ce qui cloche
 
-Ajouter 5-6 invites par niveau (doux, medium, spicy)
+Peut-être un problème d'anti-aliasing, de vitesse, ou de couleurs
 
-Les textes doivent parler à un musicien débutant/intermédiaire
 
 
 🟡 Haute : Export MIDI (+ 3h optionnel pour plus tard)
@@ -38,17 +27,6 @@ Bouton dans la topbar : "💾 Export MIDI"
 
 Sauvegarde automatique dans \~/Downloads/musejam-session-xxx.mid
 
-
-
-🟡 Moyenne : Rendu des notes défilantes
-
-Objectif : Affiner le rendu visuel (moins de scintillement, plus de clarté).
-
-À faire :
-
-Envoie-moi des screenshots → je te dirai précisément ce qui cloche
-
-Peut-être un problème d'anti-aliasing, de vitesse, ou de couleurs
 
 
 🔵 Basse : Zoom/Dézoom UI
@@ -76,13 +54,13 @@ Bref : Pas du tout prioritaire, on oublie pour l'instant.
 
 📋 Ordre d'Attaque Recommandé
 
-🟡 Contraintes \& Défi enrichis (1h)
-
 🟡 Rendu des notes défilantes plus joli
 
 🟡 Export MIDI (+3h et optionnel musejam est fait pour jouer en impro en synchro avec le clavier MIDI pas pour exporter, a reporter pour plus tard)
 
 🔵 Zoom (optionnel)
+
+⚪ À éclaircir : Intégration VST
 
 
 (optionnel) UNE FOIS SORTI DU MODE MVP SEULEMENT (APP ASSEZ PROCHE DE SON ETAT FINAL) :
