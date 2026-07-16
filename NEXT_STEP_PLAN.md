@@ -1,25 +1,9 @@
 🎯 Plan Post-MVP
 
 
-🔥 CRITIQUE : Visualisation des notes MIDI en orange dans MuseThesia (Sans Son)
-
-Objectif : Quand tu joues sur ton clavier MIDI, les touches correspondantes s'illuminent en joli orange dans la vue MuseThesia (en plus des autres touches du séquenceur qui s'illuminent et du défilement vers le bas de celles sur MuseThesia).
-Ton clavier envoie les signaux, la WebView les capte, et les touches s'allument.
-Le Piège Technique : Ne recrée pas un deuxième écouteur d'événements MIDI. Ton midi-manager.ts capte déjà tout.
-
-À faire :
-L'implémentation directe : Il suffit que midi-manager propage l'info à ton composant piano.ts (via un simple callback). Quand une note est reçue : tu lui ajoutes une classe CSS (ex: .key-midi-active avec ton orange #f7c948), et voir pour gerer la durée assez précise de la noté jouée ou sinon tant pis meme si c'est beaucoup moins bien : un simple setTimeout de 200ms la retire. Pas de Web Audio connecté à cette action, l'oscillateur reste muet pour les notes jouées pour mes doigts sur le clavier MIDI.
-
-Écouter les événements midi-note-on dans la vue MuseThesia
-Colorer la touche du piano en orange (#f7c948 ou #e8852a)
-Durée du flash : durée de la noté jouée ou \~200ms
-Ne pas interférer avec les autres notes affichées en couleur ailleurs
-Pas de Web Audio connecté à cette action
-
-
 🟡 Haute : Contraintes \& Défi enrichis
 
-Objectif : Remplacer les textes actuels (trop techniques) par des invites simples, inspirantes, actionnables.
+Objectif : Remplacer les textes actuels (parfois trop techniques) par des invites simples, inspirantes, actionnables.
 
 
 Exemples :
@@ -40,7 +24,7 @@ Ajouter 5-6 invites par niveau (doux, medium, spicy)
 Les textes doivent parler à un musicien débutant/intermédiaire
 
 
-🟡 Haute : Export MIDI
+🟡 Haute : Export MIDI (+ 3h optionnel pour plus tard)
 
 Objectif : Exporter la progression + patterns en fichier .mid (standard MIDI file).
 
@@ -92,13 +76,11 @@ Bref : Pas du tout prioritaire, on oublie pour l'instant.
 
 📋 Ordre d'Attaque Recommandé
 
-🔥 Visualisation MIDI orange dans MuseThesia (3-4h)
-
 🟡 Contraintes \& Défi enrichis (1h)
 
-🟡 Export MIDI (2-3h)
+🟡 Rendu des notes défilantes plus joli
 
-🟡 Rendu notes défilantes (à définir après screenshots)
+🟡 Export MIDI (+3h et optionnel musejam est fait pour jouer en impro en synchro avec le clavier MIDI pas pour exporter, a reporter pour plus tard)
 
 🔵 Zoom (optionnel)
 
